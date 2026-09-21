@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#14532d">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="KisanMitra">
+  <title>KisanMitra - Your Farming Companion</title>
+  
+  <!-- Preconnect Google Fonts for Instant, Rock-Solid Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/styles.css?v=5.1">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌾</text></svg>">
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- ============================================== -->
+    <!-- LEFT SIDEBAR (Permanent Desktop, Drawer Mobile) -->
+    <!-- ============================================== -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+        <div class="brand-section">
+          <div class="brand-logo-icon">🌾</div>
+          <div class="brand-title-wrap">
+            <h1 class="brand-title">KisanMitra</h1>
+            <div class="brand-sub">Your farming companion</div>
+          </div>
+        </div>
+        <button type="button" class="sidebar-close-btn" id="sidebar-close-btn" title="Close menu">✕</button>
+      </div>
+
+      <!-- Navigation List: [ Chat ] [ Market ] [ Weather ] [ My Crops ] [ Profile ] -->
+      <div class="sidebar-nav-container">
+        <div class="sidebar-nav-heading">Menu</div>
+        <nav class="sidebar-nav">
+          <button type="button" class="sidebar-nav-item active" data-tab="chat">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Chat</span>
+            <span class="nav-active-pip"></span>
+          </button>
+          <button type="button" class="sidebar-nav-item" data-tab="market">
+            <span class="nav-icon">💰</span>
+            <span class="nav-label">Market</span>
+          </button>
+          <button type="button" class="sidebar-nav-item" data-tab="weather">
+            <span class="nav-icon">🌦️</span>
+            <span class="nav-label">Weather</span>
+          </button>
+          <button type="button" class="sidebar-nav-item" data-tab="crops">
+            <span class="nav-icon">🌱</span>
+            <span class="nav-label">My Crops</span>
+          </button>
+          <button type="button" class="sidebar-nav-item" data-tab="profile">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">Profile</span>
+          </button>
+          <button type="button" class="sidebar-nav-item sidebar-share-action" id="sidebar-mobile-share-btn" title="Open KisanMitra on your mobile phone">
+            <span class="nav-icon">📱</span>
+            <span class="nav-label" id="lbl-sidebar-mobile">Open on Mobile</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <!-- Farmer Profile Status Card -->
+        <button type="button" class="sidebar-profile-card" id="sidebar-profile-btn" title="View or edit farm profile">
+          <div class="sidebar-avatar-mini">👨‍🌾</div>
+          <div class="sidebar-profile-info">
+            <div class="sidebar-name-status-row">
+              <span class="sidebar-profile-name" id="sidebar-farmer-name">Set up profile</span>
+              <span class="status-dot status-pending" id="sidebar-status-dot"></span>
+            </div>
+            <span class="sidebar-profile-sub" id="sidebar-profile-sub">Tap to personalize</span>
+          </div>
+        </button>
+
+        <!-- Sidebar Theme Row -->
+        <div class="sidebar-theme-row">
+          <span class="theme-row-label">Appearance</span>
+          <button type="button" class="theme-toggle-btn" id="sidebar-theme-toggle-btn" title="Toggle Light/Dark Theme">🌙</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile Drawer Backdrop Overlay -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- ============================================== -->
+    <!-- MAIN CONTENT AREA (Occupies Remaining Width)   -->
+    <!-- Starts at the top of the viewport              -->
+    <!-- ============================================== -->
+    <div class="main-content-wrap">
+
+      <!-- Clean Static Header (No scrolling tickers) -->
+      <header class="app-header">
+        <div class="header-left">
+          <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" title="Open Navigation Menu">☰</button>
+          <div class="header-brand-wrap">
+            <span class="header-logo">🌾</span>
+            <span class="header-name">KisanMitra</span>
+            <span class="header-tagline">"Your farming companion"</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Open on Mobile Quick Button -->
+          <button type="button" class="header-mobile-share-btn" id="header-mobile-share-btn" title="Open KisanMitra on your mobile phone">
+            <span class="share-btn-icon">📱</span>
+            <span class="share-btn-label" id="lbl-header-mobile">Open on Mobile</span>
+          </button>
+
+          <!-- Language Selector -->
+          <div class="lang-selector-group" title="Choose Language">
+            <button type="button" class="lang-pill active" data-lang="en">EN</button>
+            <button type="button" class="lang-pill" data-lang="te">తెలుగు</button>
+            <button type="button" class="lang-pill" data-lang="hi">हिन्दी</button>
+          </div>
+
+          <!-- Theme Toggle -->
+          <button type="button" class="theme-toggle-btn" id="header-theme-toggle-btn" title="Toggle Light/Dark Theme">🌙</button>
+
+          <!-- Profile Status Pill -->
+          <button type="button" class="header-profile-pill" id="header-profile-btn" title="View or edit farm profile">
+            <span class="status-dot status-pending" id="header-status-dot"></span>
+            <span id="header-farmer-name">Set up profile</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Viewport Area -->
+      <main class="main-viewport">
+
+        <!-- ============================================== -->
+        <!-- VIEW 1: CHAT (PRIMARY / CHAT-FIRST DEFAULT)    -->
+        <!-- ============================================== -->
+        <section class="tab-view-pane active" id="view-chat">
+          <div class="chat-layout">
+            
+            <!-- Message Stream -->
+            <div class="chat-stream-area" id="chat-stream">
+              
+              <!-- Welcome Companion Card (Warm Agricultural Identity) -->
+              <div class="welcome-companion-box">
+                <div class="welcome-badge-tag">🌾 Farming Companion</div>
+                <h2 class="companion-greeting">Welcome to KisanMitra</h2>
+                <p class="companion-description">
+                  Ask about your crop, market prices, weather or farming.
+                </p>
+
+                <div class="quick-actions-heading">Quick Actions</div>
+                
+                <!-- Compact Icon + Text Action Buttons (KisanMitra Controls, NOT Browser Defaults) -->
+                <div class="quick-actions-strip">
+                  <button type="button" class="compact-action-btn" data-query="What is the tomato price today?" data-action="market_prices">
+                    <span class="action-icon">💰</span>
+                    <span class="action-label">Market Price</span>
+                  </button>
+                  <button type="button" class="compact-action-btn" data-query="Show price history and price trends for my crop" data-action="price_history">
+                    <span class="action-icon">📈</span>
+                    <span class="action-label">Price History</span>
+                  </button>
+                  <button type="button" class="compact-action-btn" data-query="Where is my crop getting the highest price?" data-action="compare_markets">
+                    <span class="action-icon">📍</span>
+                    <span class="action-label">Nearby Markets</span>
+                  </button>
+                  <button type="button" class="compact-action-btn" data-query="What is the weather and spray advisory for my farm?" data-action="weather">
+                    <span class="action-icon">🌦️</span>
+                    <span class="action-label">Weather</span>
+                  </button>
+                  <button type="button" class="compact-action-btn" data-query="What fertilizer or pest remedy should I apply now?" data-action="crop_help">
+                    <span class="action-icon">🌱</span>
+                    <span class="action-label">Crop Help</span>
+                  </button>
+                  <button type="button" class="compact-action-btn" data-query="Analyze my crop photo for pest or disease" data-action="crop_photo">
+                    <span class="action-icon">📷</span>
+                    <span class="action-label">Check Crop Photo</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Active Speaking Floating Bar (TTS playback controller) -->
+            <div class="speaking-status-bar" id="speaking-status-bar">
+              <div class="speaking-label-wrap">
+                <span>🔊</span>
+                <span id="speaking-status-text">KisanMitra is speaking...</span>
+                <div class="speaking-mini-wave">
+                  <span class="speaking-mini-bar"></span>
+                  <span class="speaking-mini-bar"></span>
+                  <span class="speaking-mini-bar"></span>
+                </div>
+              </div>
+              <div class="speaking-controls-wrap">
+                <button type="button" class="speaking-ctrl-btn" id="speaking-pause-btn">⏸️ Pause</button>
+                <button type="button" class="speaking-ctrl-btn stop-btn" id="speaking-stop-btn">⏹️ Stop</button>
+              </div>
+            </div>
+
+            <!-- Voice Assistant Interactive Dock -->
+            <div class="voice-dock-overlay" id="voice-dock-overlay">
+              <div class="voice-mic-halo pulse" id="voice-mic-halo">🎙️</div>
+              <div class="voice-waveform-container active" id="voice-waveform">
+                <span class="waveform-bar"></span>
+                <span class="waveform-bar"></span>
+                <span class="waveform-bar"></span>
+                <span class="waveform-bar"></span>
+                <span class="waveform-bar"></span>
+                <span class="waveform-bar"></span>
+                <span class="waveform-bar"></span>
+              </div>
+              <div class="voice-status-heading" id="voice-status-heading">Listening...</div>
+              <div class="voice-transcript-text placeholder" id="voice-transcript-text">"Speak your question..."</div>
+              <div class="voice-countdown-bar" id="voice-countdown-bar">
+                <div class="voice-countdown-fill" id="voice-countdown-fill"></div>
+              </div>
+              <div class="voice-actions-row" id="voice-actions-row">
+                <!-- Dynamically controlled by app.js: Cancel, Stop, Edit, Send, Try Again -->
+              </div>
+            </div>
+
+            <!-- Drag & Drop Overlay Zone -->
+            <div class="chat-drag-overlay" id="chat-drag-overlay">
+              <div class="drag-overlay-content">
+                <div class="drag-icon-halo">🌿</div>
+                <div class="drag-title" id="lbl-drag-title">Drop Crop Photo Here</div>
+                <div class="drag-sub" id="lbl-drag-sub">Supports leaf, pest, or plant images for instant AI diagnosis</div>
+              </div>
+            </div>
+
+            <!-- Bottom Chat Input Area: [ Photo ] Ask KisanMitra about your farm... [ Mic ] [ Send ] -->
+            <div class="chat-composer-dock">
+              <!-- Hidden File Inputs: Gallery/Files & Mobile Direct Camera -->
+              <input type="file" id="chat-photo-input" accept="image/*" style="display: none;">
+              <input type="file" id="chat-camera-capture-input" accept="image/*" capture="environment" style="display: none;">
+
+              <!-- Rich Attachment Preview Bar with Thumbnail, Size Badge & Controls -->
+              <div class="composer-preview-bar" id="chat-attachment-bar">
+                <div class="attachment-left-content">
+                  <div class="attachment-thumb-wrap" id="attachment-thumb-click" title="Click to view full image">
+                    <img id="attachment-preview-img" alt="Selected Crop">
+                    <span class="thumb-zoom-badge">🔍</span>
+                  </div>
+                  <div class="attachment-info-wrap">
+                    <span class="attachment-main-text" id="attachment-main-text">Crop photo ready for diagnosis</span>
+                    <span class="attachment-size-badge" id="attachment-size-badge">180 KB</span>
+                  </div>
+                </div>
+                <div class="attachment-right-actions">
+                  <button type="button" id="attachment-change-btn" class="attachment-change-btn" title="Change or retake photo">🔄 Change</button>
+                  <button type="button" id="attachment-remove-btn" class="attachment-close-btn" title="Remove photo">✕</button>
+                </div>
+              </div>
+
+              <div class="composer-input-row">
+                <button type="button" class="composer-btn" id="chat-photo-btn" title="Crop Camera & Photo Upload">📷</button>
+                <input 
+                  type="text" 
+                  class="composer-text-input" 
+                  id="chat-input" 
+                  placeholder="Ask KisanMitra about your farm..." 
+                  autocomplete="off"
+                >
+                <button type="button" class="composer-btn" id="chat-voice-btn" title="Voice Input">🎙️</button>
+                <button type="button" class="composer-send-action" id="chat-send-btn" title="Send Question">➔</button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      <!-- ============================================== -->
+      <!-- VIEW 2: MARKET PAGE                            -->
+      <!-- ============================================== -->
+      <section class="tab-view-pane" id="view-market">
+        <div class="content-pane" id="market-content-mount">
+          <!-- Rendered dynamically by components.js: Latest price, Market comparison, Price history chart -->
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- VIEW 3: WEATHER PAGE                           -->
+      <!-- ============================================== -->
+      <section class="tab-view-pane" id="view-weather">
+        <div class="content-pane">
+          <div style="margin-bottom: 14px;">
+            <h2 style="font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--color-forest);">Farm Weather & Spray Advisory</h2>
+            <p style="font-size: 13px; color: var(--color-ink-muted);">Localized conditions with recommended spraying and irrigation windows.</p>
+          </div>
+
+          <div class="weather-hero-panel">
+            <div class="weather-header-row">
+              <div>
+                <div class="location-name" id="weather-location-title">Guntur, Andhra Pradesh</div>
+                <div class="temperature-reading" id="weather-temp-display">29°C</div>
+                <div class="condition-label" id="weather-condition-display">Partly Cloudy</div>
+              </div>
+              <div class="weather-metrics-list">
+                <div>Rain: <strong id="weather-rain-display">30%</strong></div>
+                <div>Humidity: <strong id="weather-humidity-display">72%</strong></div>
+                <div>Wind: <strong id="weather-wind-display">12 km/h</strong></div>
+              </div>
+            </div>
+
+            <div class="advisory-divider">
+              <div class="advisory-title">Farming Recommendation</div>
+              <div class="advisory-text" id="weather-advisory-text">
+                Favorable spray window before 11:00 AM. Avoid evening pesticide application due to 30% rain likelihood.
+              </div>
+            </div>
+          </div>
+
+          <h3 style="font-size: 13px; font-weight: 700; margin: 16px 0 8px; color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.5px;">5-Day Forecast Outlook</h3>
+          <div class="forecast-strip" id="weather-forecast-strip">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- VIEW 4: MY CROPS                               -->
+      <!-- ============================================== -->
+      <section class="tab-view-pane" id="view-crops">
+        <div class="content-pane">
+          <div style="margin-bottom: 14px;">
+            <h2 style="font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--color-forest);">My Crops</h2>
+            <p style="font-size: 13px; color: var(--color-ink-muted);">Real-time growth tracking, health status, and stage-specific care for your farm.</p>
+          </div>
+
+          <div class="farm-crops-vertical-list" id="crops-list-mount">
+            <!-- Rendered dynamically by components.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- VIEW 5: PROFILE (SECONDARY SECTION)            -->
+      <!-- ============================================== -->
+      <section class="tab-view-pane" id="view-profile">
+        <div class="content-pane">
+          <div style="margin-bottom: 14px;">
+            <h2 style="font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--color-forest);">Farmer Profile</h2>
+            <p style="font-size: 13px; color: var(--color-ink-muted);">Your farm information helps KisanMitra personalize market prices and crop recommendations.</p>
+          </div>
+
+          <div class="profile-overview-card">
+            <div class="profile-card-header">
+              <div class="profile-avatar-circle">👨‍🌾</div>
+              <div>
+                <h3 id="profile-display-name" style="font-size: 17px; font-weight: 700;">Farmer Profile</h3>
+                <div id="profile-display-location" style="font-size: 13px; color: var(--color-ink-muted);">Location not set</div>
+              </div>
+            </div>
+
+            <div class="profile-grid-details">
+              <div class="profile-metric-item">
+                <span class="metric-label" id="profile-lbl-crops">Main Crops</span>
+                <span class="metric-value" id="profile-display-crops">Not set</span>
+              </div>
+              <div class="profile-metric-item">
+                <span class="metric-label" id="profile-lbl-size">Farm Size</span>
+                <span class="metric-value" id="profile-display-size">Not set</span>
+              </div>
+              <div class="profile-metric-item">
+                <span class="metric-label" id="profile-lbl-variety">Crop Variety</span>
+                <span class="metric-value" id="profile-display-variety">Not set</span>
+              </div>
+              <div class="profile-metric-item">
+                <span class="metric-label" id="profile-lbl-soil">Soil Type</span>
+                <span class="metric-value" id="profile-display-soil">Not set</span>
+              </div>
+              <div class="profile-metric-item">
+                <span class="metric-label" id="profile-lbl-irrigation">Irrigation Type</span>
+                <span class="metric-value" id="profile-display-irrigation">Not set</span>
+              </div>
+              <div class="profile-metric-item">
+                <span class="metric-label" id="profile-lbl-stage">Growth Stage</span>
+                <span class="metric-value" id="profile-display-stage">Not set</span>
+              </div>
+            </div>
+
+            <div class="profile-footer-actions">
+              <button class="btn btn-primary" id="edit-profile-btn">Edit Profile</button>
+              <button class="btn btn-secondary" onclick="document.querySelector('[data-tab=chat]').click()">Back to Chat</button>
+              <button class="btn btn-ghost-danger" id="reset-profile-btn" title="Reset profile to test first-time onboarding">Reset Profile</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+    </div><!-- /.main-content-wrap -->
+
+    <!-- ============================================== -->
+    <!-- PROFILE SETUP MODAL ("Let's set up your farm") -->
+    <!-- ============================================== -->
+    <div class="modal-overlay" id="profile-modal-backdrop">
+      <div class="modal-dialog">
+        
+        <div class="modal-header">
+          <h2 class="modal-title" id="modal-heading">Let's set up your farm</h2>
+          <p class="modal-subtitle" id="modal-subheading">This helps KisanMitra give you information relevant to your farm.</p>
+          <button type="button" class="modal-close-icon" id="modal-dismiss-btn" style="display: none;">✕</button>
+        </div>
+
+        <form id="profile-form">
+          <div class="modal-body">
+            
+            <!-- Preserved Query Notice Box -->
+            <div class="preserved-query-box" id="preserved-query-notice">
+              <div class="preserved-query-title" id="preserved-query-title">Preserved Question:</div>
+              <div class="preserved-query-string" id="preserved-query-text">"What is the tomato price today?"</div>
+              <div class="preserved-query-caption" id="preserved-query-caption">We'll answer this right after you save your farm details.</div>
+            </div>
+
+            <!-- Required 1: Name -->
+            <div class="form-field-group">
+              <label class="field-label" for="input-farmer-name">
+                <span id="lbl-modal-name">Farmer Name</span>
+                <span class="required-mark" id="lbl-modal-name-req">* Required</span>
+              </label>
+              <input 
+                type="text" 
+                id="input-farmer-name" 
+                class="text-input" 
+                placeholder="Enter your name" 
+                required
+              >
+            </div>
+
+            <!-- Required 2: Location -->
+            <div class="form-field-group">
+              <label class="field-label" for="input-farm-location">
+                <span id="lbl-modal-location">Location (Village / District / State)</span>
+                <span class="required-mark" id="lbl-modal-location-req">* Required</span>
+              </label>
+              <input 
+                type="text" 
+                id="input-farm-location" 
+                class="text-input" 
+                placeholder="e.g. Guntur, Andhra Pradesh" 
+                required
+              >
+            </div>
+
+            <!-- Required 3: Main Crops -->
+            <div class="form-field-group">
+              <label class="field-label">
+                <span id="lbl-modal-crops">Main Crop / Crops</span>
+                <span class="required-mark" id="lbl-modal-crops-req">* Required (Select or type)</span>
+              </label>
+              <div class="chips-selector" id="crop-chips-grid">
+                <!-- Rendered dynamically -->
+              </div>
+              <input 
+                type="text" 
+                id="input-custom-crops" 
+                class="text-input" 
+                style="margin-top: 6px; height: 38px; font-size: 13.5px;" 
+                placeholder="Or type other crop names separated by comma..."
+              >
+            </div>
+
+            <!-- Required 4: Farm Size -->
+            <div class="form-field-group">
+              <label class="field-label" for="input-farm-size">
+                <span id="lbl-modal-size">Farm Size</span>
+                <span class="required-mark" id="lbl-modal-size-req">* Required</span>
+              </label>
+              <input 
+                type="text" 
+                id="input-farm-size" 
+                class="text-input" 
+                placeholder="e.g. 3 Acres / 1.5 Hectares" 
+                required
+              >
+            </div>
+
+            <!-- Optional Information Collapsible -->
+            <div>
+              <button type="button" class="optional-toggle-button" id="optional-fields-toggle">
+                <span id="lbl-modal-optional-toggle">Optional Details (Variety, Soil, Irrigation, Stage)</span>
+                <span class="toggle-arrow">▼</span>
+              </button>
+              <div class="optional-container" id="optional-fields-container">
+                
+                <div class="form-field-group">
+                  <label class="field-label" for="input-crop-variety">
+                    <span id="lbl-modal-variety">Crop Variety</span>
+                    <span class="optional-mark" id="lbl-modal-variety-opt">Optional</span>
+                  </label>
+                  <input type="text" id="input-crop-variety" class="text-input" placeholder="e.g. 341, Teja, Desi">
+                </div>
+
+                <div class="form-field-group">
+                  <label class="field-label" for="input-soil-type">
+                    <span id="lbl-modal-soil">Soil Type</span>
+                    <span class="optional-mark" id="lbl-modal-soil-opt">Optional</span>
+                  </label>
+                  <select id="input-soil-type" class="select-input">
+                    <option value="">Select soil type (Optional)</option>
+                    <option value="Red Loam">Red Loam Soil</option>
+                    <option value="Black Cotton">Black Cotton Soil</option>
+                    <option value="Sandy Loam">Sandy Loam Soil</option>
+                    <option value="Clay Loam">Clay Loam Soil</option>
+                    <option value="Alluvial">Alluvial Soil</option>
+                  </select>
+                </div>
+
+                <div class="form-field-group">
+                  <label class="field-label" for="input-irrigation-type">
+                    <span id="lbl-modal-irrigation">Irrigation Type</span>
+                    <span class="optional-mark" id="lbl-modal-irrigation-opt">Optional</span>
+                  </label>
+                  <select id="input-irrigation-type" class="select-input">
+                    <option value="">Select irrigation (Optional)</option>
+                    <option value="Drip Irrigation">Drip Irrigation</option>
+                    <option value="Sprinkler">Sprinkler Irrigation</option>
+                    <option value="Canal Irrigation">Canal Irrigation</option>
+                    <option value="Borewell Flood">Borewell / Flood</option>
+                    <option value="Rainfed">Rainfed</option>
+                  </select>
+                </div>
+
+                <div class="form-field-group">
+                  <label class="field-label" for="input-growth-stage">
+                    <span id="lbl-modal-stage">Current Growth Stage</span>
+                    <span class="optional-mark" id="lbl-modal-stage-opt">Optional</span>
+                  </label>
+                  <select id="input-growth-stage" class="select-input">
+                    <option value="">Select growth stage (Optional)</option>
+                    <option value="Sowing / Nursery">Sowing / Nursery</option>
+                    <option value="Vegetative Growth">Vegetative Growth</option>
+                    <option value="Flowering">Flowering</option>
+                    <option value="Fruiting / Boll Development">Fruiting / Boll Development</option>
+                    <option value="Harvesting Ready">Harvesting Ready</option>
+                  </select>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="modal-submit-button">
+              <span id="modal-submit-text">Save Farm Profile & Continue</span>
+            </button>
+            <div class="modal-disclaimer" id="modal-disclaimer-text">You only need to complete this once. You can update it anytime in Profile.</div>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- PHOTO OPTIONS ACTION SHEET MODAL               -->
+    <!-- ============================================== -->
+    <div class="modal-backdrop-generic" id="photo-options-modal">
+      <div class="photo-options-sheet">
+        <div class="photo-options-header">
+          <div class="options-header-title-wrap">
+            <span class="options-header-icon">📷</span>
+            <span class="photo-options-title" id="lbl-photo-options-title">Crop Health Photo</span>
+          </div>
+          <button type="button" class="modal-close-icon" id="photo-options-close-btn" title="Close">✕</button>
+        </div>
+        <p class="photo-options-sub" id="lbl-photo-options-sub">Capture a clear photo of the leaf, fruit, or pest for immediate AI disease diagnosis.</p>
+
+        <div class="photo-options-grid">
+          <button type="button" class="photo-option-card" id="opt-camera-btn">
+            <div class="option-icon-circle camera-circle">📸</div>
+            <div class="option-card-info">
+              <div class="option-title" id="lbl-opt-camera">Take Photo (Live Camera)</div>
+              <div class="option-desc" id="lbl-opt-camera-desc">Open live camera with viewfinder guide to frame plant leaves</div>
+            </div>
+            <span class="option-arrow">➔</span>
+          </button>
+
+          <button type="button" class="photo-option-card" id="opt-gallery-btn">
+            <div class="option-icon-circle gallery-circle">🖼️</div>
+            <div class="option-card-info">
+              <div class="option-title" id="lbl-opt-gallery">Choose from Gallery / Files</div>
+              <div class="option-desc" id="lbl-opt-gallery-desc">Select an existing photo from your phone or computer</div>
+            </div>
+            <span class="option-arrow">➔</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- LIVE CAMERA VIEWFINDER MODAL                   -->
+    <!-- ============================================== -->
+    <div class="camera-modal-backdrop" id="camera-viewfinder-modal">
+      <div class="camera-modal-card">
+        <!-- Top Toolbar -->
+        <div class="camera-top-bar">
+          <div class="camera-title-wrap">
+            <span>📸</span>
+            <span id="camera-modal-heading">Crop Diagnostic Camera</span>
+          </div>
+          <div class="camera-top-actions">
+            <button type="button" class="camera-tool-btn" id="camera-flip-btn" title="Switch between front and back camera">
+              <span>🔄</span> <span class="camera-tool-label" id="lbl-camera-flip">Flip</span>
+            </button>
+            <button type="button" class="camera-tool-btn close-btn" id="camera-modal-close-btn" title="Close camera">✕</button>
+          </div>
+        </div>
+
+        <!-- Live Viewfinder Port -->
+        <div class="camera-viewport-wrap" id="camera-viewport-wrap">
+          <video id="camera-video" playsinline autoplay muted></video>
+          <img id="camera-snapshot-preview" alt="Captured snapshot preview" style="display: none;">
+          <canvas id="camera-canvas" style="display: none;"></canvas>
+
+          <!-- Shutter Flash Overlay -->
+          <div class="camera-shutter-flash" id="camera-shutter-flash"></div>
+
+          <!-- Targeting Reticle Guide -->
+          <div class="viewfinder-guide-overlay" id="viewfinder-guide">
+            <div class="reticle-box">
+              <span class="reticle-corner top-left"></span>
+              <span class="reticle-corner top-right"></span>
+              <span class="reticle-corner bottom-left"></span>
+              <span class="reticle-corner bottom-right"></span>
+              <div class="reticle-center-cross"></div>
+            </div>
+            <div class="viewfinder-hint" id="viewfinder-hint-text">Position leaf, stem, or pest inside target frame</div>
+          </div>
+        </div>
+
+        <!-- Camera Bottom Action Dock -->
+        <div class="camera-bottom-dock">
+          <!-- Capture Controls -->
+          <div class="camera-capture-controls" id="camera-capture-controls">
+            <button type="button" class="camera-shutter-btn" id="camera-shutter-btn" title="Take photo">
+              <span class="shutter-inner-ring"></span>
+            </button>
+            <div class="shutter-caption" id="lbl-shutter-caption">Tap to Snap</div>
+          </div>
+
+          <!-- Review Controls (Shown after snapping) -->
+          <div class="camera-review-controls" id="camera-review-controls" style="display: none;">
+            <button type="button" class="camera-action-btn retake-btn" id="camera-retake-btn">
+              <span>🔄</span> <span id="lbl-camera-retake">Retake</span>
+            </button>
+            <button type="button" class="camera-action-btn confirm-btn" id="camera-confirm-btn">
+              <span>✓</span> <span id="lbl-camera-use">Use Photo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- IMAGE LIGHTBOX MODAL (Click to Enlarge)       -->
+    <!-- ============================================== -->
+    <div class="image-lightbox-modal" id="image-lightbox-modal">
+      <button type="button" class="lightbox-close-btn" id="lightbox-close-btn" title="Close preview">✕</button>
+      <div class="lightbox-content-wrap">
+        <img id="lightbox-img" class="lightbox-img" alt="Enlarged plant photo">
+        <div class="lightbox-caption" id="lightbox-caption">Crop Leaf Detail</div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MOBILE PHONE ACCESS & QR CODE MODAL            -->
+    <!-- ============================================== -->
+    <div class="modal-backdrop-generic" id="mobile-share-modal" style="display: none;">
+      <div class="mobile-share-card">
+        <!-- Modal Top Bar -->
+        <div class="mobile-share-header">
+          <div class="share-header-title-wrap">
+            <span class="share-header-icon">📱</span>
+            <div>
+              <h3 class="share-header-title" id="lbl-mobile-modal-title">Open on Mobile Phone</h3>
+              <p class="share-header-sub" id="lbl-mobile-modal-sub">Scan the QR code or use the links below to run KisanMitra on your phone.</p>
+            </div>
+          </div>
+          <button type="button" class="mobile-share-close-btn" id="mobile-share-close-btn" title="Close">✕</button>
+        </div>
+
+        <div class="mobile-share-body">
+          <!-- QR Code Section -->
+          <div class="qr-preview-box">
+            <div class="qr-image-frame">
+              <img id="mobile-qr-img" class="qr-code-img" src="" alt="Scan QR Code to open KisanMitra on your mobile phone" />
+              <div class="qr-reticle-corners">
+                <span class="qr-corner top-left"></span>
+                <span class="qr-corner top-right"></span>
+                <span class="qr-corner bottom-left"></span>
+                <span class="qr-corner bottom-right"></span>
+              </div>
+            </div>
+            <div class="qr-hint-text" id="lbl-qr-scan-tip">Point your phone's camera at this QR code to open instantly</div>
+          </div>
+
+          <!-- Direct Links Section -->
+          <div class="mobile-links-container">
+            <!-- Recommended HTTPS Public Link -->
+            <div class="mobile-link-card recommended" id="public-link-card">
+              <div class="link-card-header">
+                <span class="link-badge-recommended" id="lbl-link-rec">⭐ Recommended (All Networks & Mobile Data)</span>
+                <span class="link-badge-ssl">🔒 HTTPS</span>
+              </div>
+              <div class="link-card-desc" id="lbl-link-rec-desc">Works on 4G/5G mobile data and any Wi-Fi. Enables live voice mic and camera!</div>
+              <div class="link-input-row">
+                <input type="text" readonly id="public-url-input" class="mobile-url-input" value="Loading...">
+                <button type="button" class="copy-url-btn" id="copy-public-url-btn" title="Copy public link">
+                  <span class="copy-btn-text">📋 Copy</span>
+                </button>
+                <a href="#" target="_blank" rel="noopener noreferrer" id="open-public-url-btn" class="open-link-icon-btn" title="Open in new tab">↗</a>
+              </div>
+            </div>
+
+            <!-- Local Wi-Fi Direct Link -->
+            <div class="mobile-link-card" id="local-link-card">
+              <div class="link-card-header">
+                <span class="link-badge-local" id="lbl-link-local">📶 Same Wi-Fi Network</span>
+              </div>
+              <div class="link-card-desc" id="lbl-link-local-desc">Direct IP link when your phone is connected to the same local Wi-Fi:</div>
+              <div class="link-input-row">
+                <input type="text" readonly id="local-url-input" class="mobile-url-input" value="Loading...">
+                <button type="button" class="copy-url-btn" id="copy-local-url-btn" title="Copy local link">
+                  <span class="copy-btn-text">📋 Copy</span>
+                </button>
+                <a href="#" target="_blank" rel="noopener noreferrer" id="open-local-url-btn" class="open-link-icon-btn" title="Open in new tab">↗</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Highlights / Mobile Tips -->
+          <div class="mobile-features-strip">
+            <div class="mobile-feature-item">
+              <span class="feature-item-icon">🎙️</span>
+              <span class="feature-item-text" id="lbl-feature-voice"><strong>Live Voice:</strong> Tap microphone to speak in English, Telugu, or Hindi.</span>
+            </div>
+            <div class="mobile-feature-item">
+              <span class="feature-item-icon">📸</span>
+              <span class="feature-item-text" id="lbl-feature-camera"><strong>Camera Snap:</strong> Tap camera to snap leaf issues straight from your farm.</span>
+            </div>
+            <div class="mobile-feature-item">
+              <span class="feature-item-icon">📲</span>
+              <span class="feature-item-text" id="lbl-feature-pwa"><strong>Home Screen:</strong> Tap "Add to Home Screen" in your mobile browser to use as an app!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="js/app.js?v=5.1"></script>
+</body>
+</html>
