@@ -53,8 +53,11 @@ def load_profile() -> FarmerProfile:
     return FarmerProfile()
 
 def save_profile_to_disk(profile: FarmerProfile):
-    with open(PROFILE_FILE, "w", encoding="utf-8") as f:
-        json.dump(profile.model_dump(), f, indent=2)
+    try:
+        with open(PROFILE_FILE, "w", encoding="utf-8") as f:
+            json.dump(profile.model_dump(), f, indent=2)
+    except Exception:
+        pass
 
 # In-memory working copy
 current_profile = load_profile()
