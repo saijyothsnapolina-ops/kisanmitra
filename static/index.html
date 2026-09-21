@@ -128,6 +128,12 @@
           <!-- Theme Toggle -->
           <button type="button" class="theme-toggle-btn" id="header-theme-toggle-btn" title="Toggle Light/Dark Theme">🌙</button>
 
+          <!-- Location Pill -->
+          <button type="button" class="header-location-pill" id="header-location-btn" title="Detect or view farm GPS location">
+            <span class="location-icon">📍</span>
+            <span id="header-location-name">Detect Location</span>
+          </button>
+
           <!-- Profile Status Pill -->
           <button type="button" class="header-profile-pill" id="header-profile-btn" title="View or edit farm profile">
             <span class="status-dot status-pending" id="header-status-dot"></span>
@@ -439,10 +445,15 @@
 
             <!-- Required 2: Location -->
             <div class="form-field-group">
-              <label class="field-label" for="input-farm-location">
-                <span id="lbl-modal-location">Location (Village / District / State)</span>
-                <span class="required-mark" id="lbl-modal-location-req">* Required</span>
-              </label>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="field-label" for="input-farm-location" style="margin-bottom: 0;">
+                  <span id="lbl-modal-location">Location (Village / District / State)</span>
+                  <span class="required-mark" id="lbl-modal-location-req">* Required</span>
+                </label>
+                <button type="button" id="detect-gps-btn" class="gps-detect-btn" title="Detect GPS coordinates using browser location">
+                  <span>📍</span> <span id="lbl-detect-gps">Detect GPS</span>
+                </button>
+              </div>
               <input 
                 type="text" 
                 id="input-farm-location" 
@@ -450,6 +461,7 @@
                 placeholder="e.g. Guntur, Andhra Pradesh" 
                 required
               >
+              <div id="gps-status-hint" class="gps-status-hint" style="display: none; font-size: 12px; margin-top: 4px; color: #16a34a; font-weight: 500;"></div>
             </div>
 
             <!-- Required 3: Main Crops -->

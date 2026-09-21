@@ -15,6 +15,7 @@ import os
 import re
 import json
 import logging
+import math
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, date
 
@@ -772,3 +773,102 @@ getLowestPriceMarket = MarketService.get_lowest_price_market
 compareMarketPrices = MarketService.compare_market_prices
 getMarketPriceSpread = MarketService.get_market_price_spread
 normalizeRecord = MarketService.normalize_record
+
+# ---------------------------------------------------------------------------
+# Mandi Geographic Coordinates & Distance Utilities
+# ---------------------------------------------------------------------------
+MANDI_COORDINATES: Dict[str, Tuple[float, float]] = {
+    "Guntur Mirchi Yard": (16.3067, 80.4365),
+    "Guntur APMC": (16.3067, 80.4365),
+    "Tenali Market Yard": (16.2430, 80.6400),
+    "Vijayawada Mandi": (16.5062, 80.6480),
+    "Chilakaluripet Yard": (16.0892, 80.1672),
+    "Narasaraopet Yard": (16.2359, 80.0499),
+    "Warangal Mandi": (17.9689, 79.5941),
+    "Enumamula Yard": (17.9850, 79.6200),
+    "Khammam APMC": (17.2473, 80.1514),
+    "Miryalaguda APMC": (16.8711, 79.5631),
+    "Suryapet Yard": (17.1439, 79.6239),
+    "Adilabad Yard": (19.6641, 78.5320),
+    "Bhainsa APMC": (19.1917, 77.9644),
+    "Kurnool Mandi": (15.8281, 78.0373),
+    "Hyderabad Bowenpally": (17.4735, 78.4875),
+    "Mahbubnagar Mandi": (16.7433, 78.0039),
+    "Nellore Mandi": (14.4426, 79.9865),
+    "Byadgi Mandi": (14.6826, 75.4878),
+    "Haveri APMC": (14.7967, 75.3991),
+    "Solapur Yard": (17.6599, 75.9064)
+}
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate great-circle distance between two GPS coordinates in kilometers."""
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2.0) ** 2 +
+         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
+         math.sin(dlon / 2.0) ** 2)
+    c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
+    return round(R * c, 1)
+
+def find_nearby_mandis(lat: float, lon: float, crop: Optional[str] = None, max_km: float = 300.0) -> List[Dict[str, Any]]:
+    """Return verified APMC mandis ranked by physical proximity in kilometers."""
+    nearby = []
+    seen = set()
+    for rec in VERIFIED_MANDI_RECORDS:
+        market_name = rec["market"]
+        if market_name in seen:
+            continue
+        if crop and rec["crop"].lower() != crop.lower():
+            continue
+        coords = MANDI_COORDINATES.get(market_name)
+        if not coords:
+            continue
+        dist = haversine_km(lat, lon, coords[0], coords[1])
+        if dist <= max_km:
+            seen.add(market_name)
+            nearby.append({
+                "market": market_name,
+                "district": rec["district"],
+                "state": rec["state"],
+                "crop": rec["crop"],
+                "variety": rec.get("variety"),
+                "modal_price": rec.get("modal_price"),
+                "distance_km": dist,
+                "latitude": coords[0],
+                "longitude": coords[1]
+            })
+    nearby.sort(key=lambda x: x["distance_km"])
+    return nearby
+
+def resolve_coordinates_to_district(lat: float, lon: float) -> Dict[str, Any]:
+    """Resolve GPS coordinates to nearest official APMC district without fake data."""
+    closest_mandi = "Guntur Mirchi Yard"
+    min_dist = float("inf")
+    for market_name, coords in MANDI_COORDINATES.items():
+        dist = haversine_km(lat, lon, coords[0], coords[1])
+        if dist < min_dist:
+            min_dist = dist
+            closest_mandi = market_name
+
+    district = "Guntur"
+    state = "Andhra Pradesh"
+    for r in VERIFIED_MANDI_RECORDS:
+        if r["market"] == closest_mandi:
+            district = r["district"]
+            state = r["state"]
+            break
+
+    nearby = find_nearby_mandis(lat, lon, max_km=250.0)
+
+    return {
+        "latitude": lat,
+        "longitude": lon,
+        "district": district,
+        "state": state,
+        "country": "India",
+        "nearest_market": closest_mandi,
+        "nearest_distance_km": min_dist,
+        "display_name": f"{district}, {state}",
+        "nearby_mandis": nearby[:5]
+    }

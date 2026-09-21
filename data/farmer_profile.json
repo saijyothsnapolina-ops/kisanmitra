@@ -4,8 +4,12 @@
   "crops": [],
   "farm_size": "",
   "crop_variety": "",
+  "crop_varieties": [],
   "soil_type": "",
   "irrigation_type": "",
   "growth_stage": "",
-  "completed": false
+  "sowing_date": "",
+  "preferred_language": "en",
+  "completed": false,
+  "gps_location": null
 }

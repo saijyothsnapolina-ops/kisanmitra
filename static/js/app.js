@@ -37,6 +37,7 @@ const state = {
     growth_stage: ''
   },
   pendingMessage: null, // { text: string, image?: string, action?: string }
+  location: null, // { latitude, longitude, accuracy, district, mandal, state, nearest_market, nearest_distance_km }
   activeTab: 'chat',
   selectedImageBase64: null,
   isRecordingVoice: false,
@@ -125,6 +126,8 @@ function cacheDOMElements() {
     headerProfileBtn: document.getElementById('header-profile-btn') || document.getElementById('mobile-profile-btn'),
     headerFarmerName: document.getElementById('header-farmer-name') || document.getElementById('mobile-farmer-name'),
     headerStatusDot: document.getElementById('header-status-dot') || document.getElementById('mobile-status-dot'),
+    headerLocationBtn: document.getElementById('header-location-btn'),
+    headerLocationName: document.getElementById('header-location-name'),
     langPills: document.querySelectorAll('.lang-pill'),
 
     // Sidebar Navigation: [ Chat ] [ Market ] [ Weather ] [ My Crops ] [ Profile ]
@@ -222,6 +225,8 @@ function cacheDOMElements() {
     preservedQueryText: document.getElementById('preserved-query-text'),
     inputName: document.getElementById('input-farmer-name'),
     inputLocation: document.getElementById('input-farm-location'),
+    detectGpsBtn: document.getElementById('detect-gps-btn'),
+    gpsStatusHint: document.getElementById('gps-status-hint'),
     inputSize: document.getElementById('input-farm-size'),
     cropChipsContainer: document.getElementById('crop-chips-grid'),
     inputCustomCrops: document.getElementById('input-custom-crops'),
@@ -295,6 +300,18 @@ function attachEventListeners() {
   if (dom.headerProfileBtn) {
     dom.headerProfileBtn.addEventListener('click', () => {
       navigateToView('profile');
+    });
+  }
+
+  // Location Pill & GPS Button
+  if (dom.headerLocationBtn) {
+    dom.headerLocationBtn.addEventListener('click', () => {
+      requestUserLocation(true);
+    });
+  }
+  if (dom.detectGpsBtn) {
+    dom.detectGpsBtn.addEventListener('click', () => {
+      requestUserLocation(false);
     });
   }
 
@@ -489,6 +506,9 @@ async function loadInitialState() {
       state.profile = profile;
       updateHeaderProfileUI(true);
       updateProfileViewUI();
+      if (profile.location && dom.headerLocationName) {
+        dom.headerLocationName.textContent = profile.location;
+      }
     } else {
       state.profileCompleted = false;
       updateHeaderProfileUI(false);
@@ -498,6 +518,93 @@ async function loadInitialState() {
     state.profileCompleted = false;
     updateHeaderProfileUI(false);
   }
+
+  // Gracefully check if browser already allowed geolocation
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'geolocation' }).then(result => {
+      if (result.state === 'granted') {
+        requestUserLocation(false);
+      }
+    }).catch(() => {});
+  }
+}
+
+async function requestUserLocation(promptUser = false) {
+  const t = translations[state.lang] || translations.en;
+
+  if (!navigator.geolocation) {
+    if (dom.gpsStatusHint) {
+      dom.gpsStatusHint.textContent = t.gpsUnsupported || 'Geolocation is not supported in this browser.';
+      dom.gpsStatusHint.style.color = '#dc2626';
+      dom.gpsStatusHint.style.display = 'block';
+    }
+    return;
+  }
+
+  if (dom.gpsStatusHint) {
+    dom.gpsStatusHint.textContent = t.gpsDetecting || 'Detecting exact GPS coordinates...';
+    dom.gpsStatusHint.style.color = '#0284c7';
+    dom.gpsStatusHint.style.display = 'block';
+  }
+  if (dom.headerLocationName) {
+    dom.headerLocationName.textContent = 'Detecting...';
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      try {
+        const { latitude, longitude, accuracy } = position.coords;
+        const res = await api.resolveLocation({ latitude, longitude, accuracy });
+
+        state.location = {
+          latitude,
+          longitude,
+          accuracy: Math.round(accuracy || 0),
+          district: res.district,
+          state: res.state,
+          country: res.country || 'India',
+          nearest_market: res.nearest_market,
+          nearest_distance_km: res.nearest_distance_km,
+          captured_at: res.captured_at
+        };
+
+        const locDisplay = res.display_name || `${res.district}, ${res.state}`;
+        if (dom.inputLocation) {
+          dom.inputLocation.value = locDisplay;
+        }
+        if (dom.headerLocationName) {
+          dom.headerLocationName.textContent = res.nearest_market ? `${res.district} (${res.nearest_distance_km}km)` : res.district;
+        }
+        if (dom.headerLocationBtn) {
+          dom.headerLocationBtn.classList.add('active');
+          dom.headerLocationBtn.title = `Exact GPS: ${res.district} • Nearest Mandi: ${res.nearest_market} (${res.nearest_distance_km} km)`;
+        }
+        if (dom.gpsStatusHint) {
+          dom.gpsStatusHint.textContent = `✓ ${res.display_name} • ${t.nearbyMandiLabel || 'Nearest APMC Mandi:'} ${res.nearest_market} (${res.nearest_distance_km} km)`;
+          dom.gpsStatusHint.style.color = '#16a34a';
+          dom.gpsStatusHint.style.display = 'block';
+        }
+      } catch (err) {
+        console.warn('Location resolution failed:', err);
+        if (dom.gpsStatusHint) {
+          dom.gpsStatusHint.textContent = 'GPS captured. Could not resolve nearby mandi.';
+          dom.gpsStatusHint.style.color = '#ea580c';
+        }
+      }
+    },
+    (err) => {
+      console.warn('Geolocation error:', err.message);
+      if (dom.gpsStatusHint) {
+        dom.gpsStatusHint.textContent = t.gpsDenied || 'Location permission denied. You can enter manually.';
+        dom.gpsStatusHint.style.color = '#dc2626';
+        dom.gpsStatusHint.style.display = 'block';
+      }
+      if (dom.headerLocationName) {
+        dom.headerLocationName.textContent = (state.profile && state.profile.location) ? state.profile.location : 'Detect Location';
+      }
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+  );
 }
 
 function setLanguage(lang) {
@@ -943,6 +1050,7 @@ function executeUserQuery(interaction) {
     image: interaction.image,
     action: interaction.action,
     profile: state.profile,
+    location: state.location,
     lang: state.lang,
     conversation_id: state.conversationId,
     onChunk: (chunk, convId) => {
@@ -984,16 +1092,16 @@ function executeUserQuery(interaction) {
         },
         res.spoken_text,
         (spokenToReplay, replayBtn) => {
-          VoiceController.speakText(spokenToReplay, replayBtn);
+          VoiceController.speakText(spokenToReplay, replayBtn, res.detected_language);
         },
-        state.lang
+        res.detected_language || state.lang
       );
       dom.chatStream.appendChild(botBubble);
       dom.chatStream.scrollTop = dom.chatStream.scrollHeight;
 
       // Automatically speak the AI answer if the query originated via voice
       if (interaction.isVoice && (res.spoken_text || res.reply)) {
-        VoiceController.speakText(res.spoken_text || res.reply);
+        VoiceController.speakText(res.spoken_text || res.reply, null, res.detected_language);
       }
     },
     onError: (err) => {
@@ -1004,6 +1112,7 @@ function executeUserQuery(interaction) {
         image: interaction.image,
         action: interaction.action,
         profile: state.profile,
+        location: state.location,
         lang: state.lang,
         conversation_id: state.conversationId
       })
@@ -1023,15 +1132,15 @@ function executeUserQuery(interaction) {
           },
           response.spoken_text,
           (spokenToReplay, replayBtn) => {
-            VoiceController.speakText(spokenToReplay, replayBtn);
+            VoiceController.speakText(spokenToReplay, replayBtn, response.detected_language);
           },
-          state.lang
+          response.detected_language || state.lang
         );
         dom.chatStream.appendChild(botBubble);
         dom.chatStream.scrollTop = dom.chatStream.scrollHeight;
 
         if (interaction.isVoice && (response.spoken_text || response.reply)) {
-          VoiceController.speakText(response.spoken_text || response.reply);
+          VoiceController.speakText(response.spoken_text || response.reply, null, response.detected_language);
         }
       })
       .catch(finalErr => {
@@ -1888,22 +1997,23 @@ const VoiceController = {
     return text.replace(/\s+/g, ' ').trim();
   },
 
-  speakText(text, replayButton = null) {
+  speakText(text, replayButton = null, langCode = null) {
     if (!('speechSynthesis' in window)) return;
 
     this.stopSpeaking();
     const spokenContent = this.cleanTextForSpeech(text);
     if (!spokenContent) return;
 
-    const t = translations[state.lang] || translations.en;
+    const effectiveLang = langCode || state.lang || 'en';
+    const t = translations[effectiveLang] || translations[state.lang] || translations.en;
     const utterance = new SpeechSynthesisUtterance(spokenContent);
-    const voice = this.getBestVoice(state.lang);
+    const voice = this.getBestVoice(effectiveLang);
 
     if (voice) {
       utterance.voice = voice;
       utterance.lang = voice.lang;
     } else {
-      utterance.lang = state.lang === 'te' ? 'te-IN' : state.lang === 'hi' ? 'hi-IN' : 'en-IN';
+      utterance.lang = effectiveLang === 'te' ? 'te-IN' : effectiveLang === 'hi' ? 'hi-IN' : 'en-IN';
     }
 
     utterance.rate = 0.95; // Farmer-friendly, calm natural cadence
@@ -1913,6 +2023,7 @@ const VoiceController = {
     this.isSpeaking = true;
     this.isPaused = false;
     this.activeReplayBtn = replayButton;
+    this.setDockState('RESPONDING', spokenContent);
 
     if (this.activeReplayBtn) {
       this.activeReplayBtn.classList.add('speaking');
@@ -1952,6 +2063,7 @@ const VoiceController = {
     if (dom.speakingStatusBar) {
       dom.speakingStatusBar.classList.remove('active');
     }
+    this.setDockState('IDLE');
   },
 
   stopSpeaking() {
@@ -2176,7 +2288,7 @@ const VoiceController = {
       return;
     }
     this.clearCountdown();
-    this.hideDock();
+    this.setDockState('PROCESSING');
 
     const queryText = text.trim();
     this.currentTranscript = '';
@@ -2201,9 +2313,15 @@ const VoiceController = {
     });
   },
 
-  setDockState(stateName) {
+  setDockState(stateName, extraContent = null) {
     const t = translations[state.lang] || translations.en;
     if (!dom.voiceDock) return;
+
+    if (stateName === 'IDLE') {
+      this.hideDock();
+      return;
+    }
+
     dom.voiceDock.classList.add('active');
 
     if (stateName === 'LISTENING') {
@@ -2252,6 +2370,24 @@ const VoiceController = {
         { label: `❌ ${t.voiceCancel || 'Cancel'}`, cls: 'voice-btn-secondary', onClick: () => this.cancelVoiceInput() },
         { label: `➔ ${t.voiceSend || 'Send'}`, cls: 'voice-btn-primary', onClick: () => this.sendVoiceInputNow() }
       ]);
+    } else if (stateName === 'RESPONDING') {
+      if (dom.voiceMicHalo) {
+        dom.voiceMicHalo.className = 'voice-mic-halo pulse';
+        dom.voiceMicHalo.textContent = '🔊';
+      }
+      if (dom.voiceWaveform) dom.voiceWaveform.className = 'voice-waveform-container active';
+      if (dom.voiceStatusHeading) dom.voiceStatusHeading.textContent = t.voiceSpeaking || 'KisanMitra is speaking...';
+      if (dom.voiceTranscriptText && extraContent) {
+        dom.voiceTranscriptText.textContent = `“${extraContent}”`;
+        dom.voiceTranscriptText.classList.remove('placeholder');
+      }
+      this.clearCountdown();
+      this.renderDockActions([
+        { label: `⏹️ ${t.voiceStop || 'Stop'}`, cls: 'voice-btn-secondary', onClick: () => this.stopSpeaking() },
+        { label: `🔄 ${t.voiceReplay || 'Replay'}`, cls: 'voice-btn-primary', onClick: () => this.speakText(extraContent) }
+      ]);
+    } else if (stateName === 'ERROR') {
+      this.showDockError(extraContent || t.voiceErrorNoSpeech || 'Voice assistance error');
     }
   },
 

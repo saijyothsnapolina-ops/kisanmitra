@@ -7,7 +7,8 @@ and Farmer Profile Management with Chat-First deferral flow.
 import os
 import json
 import re
-from typing import List, Optional
+import time
+from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -31,16 +32,33 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 PROFILE_FILE = os.path.join(DATA_DIR, "farmer_profile.json")
 
+class LocationContext(BaseModel):
+    latitude: float
+    longitude: float
+    accuracy: Optional[float] = None
+    village: Optional[str] = None
+    mandal: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = "India"
+    nearest_market: Optional[str] = None
+    nearest_distance_km: Optional[float] = None
+    captured_at: Optional[float] = None
+
 class FarmerProfile(BaseModel):
     name: str = ""
     location: str = ""
     crops: List[str] = []
     farm_size: str = ""
     crop_variety: Optional[str] = ""
+    crop_varieties: List[str] = []
     soil_type: Optional[str] = ""
     irrigation_type: Optional[str] = ""
     growth_stage: Optional[str] = ""
+    sowing_date: Optional[str] = ""
+    preferred_language: Optional[str] = "en"
     completed: bool = False
+    gps_location: Optional[LocationContext] = None
 
 def load_profile() -> FarmerProfile:
     if os.path.exists(PROFILE_FILE):
@@ -879,6 +897,41 @@ def get_crop_advisories(crop: Optional[str] = None):
             return {"status": "success", "data": filtered}
     return {"status": "success", "data": farm_crops}
 
+# ----------------- Location & Proximity Services -----------------
+
+class LocationResolveRequest(BaseModel):
+    latitude: float
+    longitude: float
+    accuracy: Optional[float] = None
+
+@app.post("/api/location/resolve")
+def resolve_location(req: LocationResolveRequest):
+    """Resolve browser GPS coordinates to official APMC district and nearby markets."""
+    res = market_service.resolve_coordinates_to_district(req.latitude, req.longitude)
+    if req.accuracy is not None:
+        res["accuracy"] = req.accuracy
+    res["captured_at"] = time.time()
+    res["status"] = "success"
+    res["data"] = dict(res)
+    return res
+
+@app.get("/api/market/nearby")
+def get_nearby_markets(
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
+    crop: Optional[str] = None,
+    max_km: float = 250.0
+):
+    """List APMC markets ranked by physical distance from coordinates."""
+    actual_lat = latitude if latitude is not None else lat
+    actual_lon = longitude if longitude is not None else lon
+    if actual_lat is None or actual_lon is None:
+        raise HTTPException(status_code=400, detail="Latitude and longitude coordinates are required.")
+    mandis = market_service.find_nearby_mandis(actual_lat, actual_lon, crop=crop, max_km=max_km)
+    return {"status": "success", "count": len(mandis), "data": mandis, "mandis": mandis}
+
 # ----------------- AI Chat & Personalization Engine -----------------
 
 class ChatRequest(BaseModel):
@@ -888,28 +941,33 @@ class ChatRequest(BaseModel):
     profile: Optional[FarmerProfile] = None
     lang: Optional[str] = "en"
     conversation_id: Optional[str] = None
+    location: Optional[LocationContext] = None
 
 @app.post("/api/chat")
 def process_chat(req: ChatRequest):
     profile = req.profile or load_profile()
+    loc_dict = req.location.model_dump() if req.location else None
     return AIAgent.process(
         message=req.message,
         conversation_id=req.conversation_id,
         image_base64=req.image,
         profile=profile,
-        lang=req.lang or "en"
+        lang=req.lang or "en",
+        location=loc_dict
     )
 
 @app.post("/api/chat/stream")
 async def process_chat_stream(req: ChatRequest):
     profile = req.profile or load_profile()
+    loc_dict = req.location.model_dump() if req.location else None
     return StreamingResponse(
         AIAgent.process_stream(
             message=req.message,
             conversation_id=req.conversation_id,
             image_base64=req.image,
             profile=profile,
-            lang=req.lang or "en"
+            lang=req.lang or "en",
+            location=loc_dict
         ),
         media_type="text/event-stream"
     )

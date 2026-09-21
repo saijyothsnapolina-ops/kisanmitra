@@ -47,11 +47,11 @@ export const api = {
   /**
    * Send user message to AI assistant
    */
-  async sendChat({ message, image = null, action = null, profile = null, lang = 'en', conversation_id = null }) {
+  async sendChat({ message, image = null, action = null, profile = null, location = null, lang = 'en', conversation_id = null }) {
     const res = await fetch(`${API_BASE}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, image, action, profile, lang, conversation_id })
+      body: JSON.stringify({ message, image, action, profile, location, lang, conversation_id })
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -63,12 +63,12 @@ export const api = {
   /**
    * Send user message to AI assistant with live streaming SSE response
    */
-  async sendChatStream({ message, image = null, action = null, profile = null, lang = 'en', conversation_id = null, onChunk, onDone, onError }) {
+  async sendChatStream({ message, image = null, action = null, profile = null, location = null, lang = 'en', conversation_id = null, onChunk, onDone, onError }) {
     try {
       const res = await fetch(`${API_BASE}/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, image, action, profile, lang, conversation_id })
+        body: JSON.stringify({ message, image, action, profile, location, lang, conversation_id })
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -236,5 +236,38 @@ export const api = {
       throw new Error('Failed to load network access information');
     }
     return res.json();
+  },
+
+  /**
+   * Resolve GPS coordinates to district and nearest APMC mandi
+   */
+  async resolveLocation({ latitude, longitude, accuracy = null }) {
+    const res = await fetch(`${API_BASE}/location/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latitude, longitude, accuracy })
+    });
+    if (!res.ok) {
+      throw new Error('Failed to resolve GPS coordinates');
+    }
+    return res.json();
+  },
+
+  /**
+   * Fetch nearby APMC mandis ordered by road distance
+   */
+  async getNearbyMarkets(latitude, longitude, crop = 'Chilli', max_km = 150) {
+    const params = new URLSearchParams({
+      latitude: latitude.toString(),
+      longitude: longitude.toString(),
+      crop: crop || 'Chilli',
+      max_km: max_km.toString()
+    });
+    const res = await fetch(`${API_BASE}/market/nearby?${params.toString()}`);
+    if (!res.ok) {
+      throw new Error('Failed to load nearby mandis');
+    }
+    return res.json();
   }
 };
+
