@@ -169,6 +169,16 @@ export const translations = {
     notSet: "Not set",
     locationNotSet: "Location not set",
     noneSelected: "None selected",
+    farmLocationTitle: "Farm Location",
+    farmLocationDesc: "Where your crops grow (Used for spray advisories, weather & farm mandi rates)",
+    deviceLocationTitle: "Current Device Location",
+    deviceLocationDesc: "Where your phone is physically right now (Used for 'here' or 'near me')",
+    chooseFarmLocationBtn: "📍 Choose Farm Location",
+    detectDeviceLocationBtn: "📡 Detect My Location",
+    searchLocationPlaceholder: "Search village, mandal, district...",
+    deviceLocationNotDetected: "Not detected yet (Click Detect My Location)",
+    saveFarmLocationBtn: "Save Farm Location",
+
 
     // Market Page - Sections & Controls
     marketHeaderTitle: "Mandi Market Prices",
@@ -450,6 +460,16 @@ export const translations = {
     notSet: "నమోదు కాలేదు",
     locationNotSet: "ప్రాంతం నమోదు కాలేదు",
     noneSelected: "ఎంపిక చేయలేదు",
+    farmLocationTitle: "పొలం ప్రాంతం (వ్యవసాయ భూమి)",
+    farmLocationDesc: "మీ పంటలు పండే ప్రాంతం (వాతావరణం, మందుల పిచికారీ మరియు మార్కెట్ ధరల కోసం)",
+    deviceLocationTitle: "ప్రస్తుత పరికరం ప్రాంతం (డివైజ్)",
+    deviceLocationDesc: "మీరు ప్రస్తుతం ఫోన్‌తో ఉన్న ప్రాంతం ('ఇక్కడ' లేదా 'నాకు దగ్గరగా' అని అడిగినప్పుడు ఉపయోగిస్తారు)",
+    chooseFarmLocationBtn: "📍 పొలం ప్రాంతాన్ని ఎంచుకోండి",
+    detectDeviceLocationBtn: "📡 నా ప్రాంతాన్ని గుర్తించండి",
+    searchLocationPlaceholder: "గ్రామం, మండలం, జిల్లా పేరు వెతకండి...",
+    deviceLocationNotDetected: "గుర్తించలేదు (నా ప్రాంతాన్ని గుర్తించండి నొక్కండి)",
+    saveFarmLocationBtn: "పొలం ప్రాంతాన్ని సేవ్ చేయండి",
+
 
     // Market Page - Sections & Controls
     marketHeaderTitle: "మార్కెట్ యార్డ్ ధరలు",
@@ -731,6 +751,16 @@ export const translations = {
     notSet: "दर्ज नहीं है",
     locationNotSet: "स्थान दर्ज नहीं है",
     noneSelected: "कोई नहीं चुना",
+    farmLocationTitle: "खेत का स्थान (कृषि भूमि)",
+    farmLocationDesc: "जहाँ आपकी फसलें उगती हैं (मौसम, छिड़काव और मंडी भाव के लिए)",
+    deviceLocationTitle: "वर्तमान डिवाइस स्थान",
+    deviceLocationDesc: "जहाँ आप अभी फोन के साथ मौजूद हैं ('यहाँ' या 'मेरे पास' के लिए)",
+    chooseFarmLocationBtn: "📍 खेत का स्थान चुनें",
+    detectDeviceLocationBtn: "📡 मेरा स्थान खोजें",
+    searchLocationPlaceholder: "गाँव, मंडल या जिला खोजें...",
+    deviceLocationNotDetected: "अभी तक नहीं खोजा गया (मेरा स्थान खोजें पर क्लिक करें)",
+    saveFarmLocationBtn: "खेत का स्थान सहेजें",
+
 
     // Market Page - Sections & Controls
     marketHeaderTitle: "मंडी के ताजा भाव",

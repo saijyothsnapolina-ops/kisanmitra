@@ -47,7 +47,12 @@ class LocationContext(BaseModel):
 
 class FarmerProfile(BaseModel):
     name: str = ""
+    farm_location: str = ""
+    farm_location_details: Optional[Dict[str, Any]] = None
     location: str = ""
+    device_location: Optional[LocationContext] = None
+    gps_location: Optional[LocationContext] = None
+    main_crop: Optional[str] = ""
     crops: List[str] = []
     farm_size: str = ""
     crop_variety: Optional[str] = ""
@@ -56,9 +61,8 @@ class FarmerProfile(BaseModel):
     irrigation_type: Optional[str] = ""
     growth_stage: Optional[str] = ""
     sowing_date: Optional[str] = ""
-    preferred_language: Optional[str] = "en"
+    preferred_language: Optional[str] = "te"
     completed: bool = False
-    gps_location: Optional[LocationContext] = None
 
 def load_profile() -> FarmerProfile:
     if os.path.exists(PROFILE_FILE):
@@ -571,7 +575,14 @@ def update_profile(profile_data: FarmerProfile):
     # Required field validation
     if not profile_data.name.strip():
         raise HTTPException(status_code=400, detail="Farmer name is required.")
-    if not profile_data.location.strip():
+    
+    # Synchronize farm_location and location
+    if profile_data.farm_location.strip() and not profile_data.location.strip():
+        profile_data.location = profile_data.farm_location.strip()
+    elif profile_data.location.strip() and not profile_data.farm_location.strip():
+        profile_data.farm_location = profile_data.location.strip()
+
+    if not profile_data.farm_location.strip() and not profile_data.location.strip():
         raise HTTPException(status_code=400, detail="Farm location is required.")
     if not profile_data.crops or len([c for c in profile_data.crops if c.strip()]) == 0:
         raise HTTPException(status_code=400, detail="At least one main crop is required.")
@@ -591,6 +602,49 @@ def reset_profile():
     current_profile.completed = False
     save_profile_to_disk(current_profile)
     return {"status": "success", "message": "Profile reset to blank for first-time onboarding test.", "profile": current_profile}
+
+class FarmLocationUpdateRequest(BaseModel):
+    farm_location: str
+    farm_location_details: Optional[Dict[str, Any]] = None
+
+@app.post("/api/location/farm")
+def update_farm_location(req: FarmLocationUpdateRequest):
+    """Save or update farm location independently from device location."""
+    global current_profile
+    if not req.farm_location.strip():
+        raise HTTPException(status_code=400, detail="Farm location cannot be empty.")
+    current_profile.farm_location = req.farm_location.strip()
+    current_profile.location = req.farm_location.strip()
+    if req.farm_location_details:
+        current_profile.farm_location_details = req.farm_location_details
+    save_profile_to_disk(current_profile)
+    return {
+        "status": "success",
+        "message": "Farm location updated successfully",
+        "farm_location": current_profile.farm_location,
+        "profile": current_profile
+    }
+
+@app.post("/api/location/device")
+def update_device_location(loc: LocationContext):
+    """Update current device location from GPS. NEVER overwrites farm location."""
+    global current_profile
+    current_profile.device_location = loc
+    current_profile.gps_location = loc
+    # Strictly preserve farm_location
+    save_profile_to_disk(current_profile)
+    return {
+        "status": "success",
+        "message": "Device location updated",
+        "device_location": loc,
+        "farm_location": current_profile.farm_location
+    }
+
+@app.get("/api/location/search")
+def search_locations_endpoint(q: str = ""):
+    """Search agricultural locations across India (village, mandal, district, state)."""
+    results = market_service.search_locations(q)
+    return {"status": "success", "count": len(results), "data": results}
 
 # ----------------- Market & Weather Services & Endpoints -----------------
 
@@ -807,9 +861,10 @@ def get_weather(location: Optional[str] = None):
             if key.lower() in location.lower():
                 loc_key = key
                 break
+    loc_display = location.strip() if (location and location.strip()) else "Farm Location"
     return {
         "status": "success",
-        "location": location or "Guntur, Andhra Pradesh",
+        "location": loc_display,
         "data": WEATHER_DATA.get(loc_key, WEATHER_DATA["default"]),
         "forecast_5_days": [
             {"day": "Today", "temp": "29°C / 23°C", "condition": "Partly Cloudy", "rain": "30%", "icon": "⛅"},
@@ -942,32 +997,58 @@ class ChatRequest(BaseModel):
     lang: Optional[str] = "en"
     conversation_id: Optional[str] = None
     location: Optional[LocationContext] = None
+    device_location: Optional[LocationContext] = None
+    farm_location: Optional[str] = None
 
 @app.post("/api/chat")
 def process_chat(req: ChatRequest):
-    profile = req.profile or load_profile()
-    loc_dict = req.location.model_dump() if req.location else None
+    profile = req.profile or current_profile or load_profile()
+    if req.farm_location and not profile.farm_location:
+        profile.farm_location = req.farm_location
+    if profile.farm_location and not profile.location:
+        profile.location = profile.farm_location
+    elif profile.location and not profile.farm_location:
+        profile.farm_location = profile.location
+
+    device_loc = req.device_location or req.location
+    device_loc_dict = device_loc.model_dump() if device_loc else (profile.device_location.model_dump() if getattr(profile, "device_location", None) else None)
+    farm_loc_str = profile.farm_location or profile.location or ""
+
     return AIAgent.process(
         message=req.message,
         conversation_id=req.conversation_id,
         image_base64=req.image,
         profile=profile,
-        lang=req.lang or "en",
-        location=loc_dict
+        lang=req.lang or "te",
+        location=device_loc_dict,
+        device_location=device_loc_dict,
+        farm_location=farm_loc_str
     )
 
 @app.post("/api/chat/stream")
 async def process_chat_stream(req: ChatRequest):
-    profile = req.profile or load_profile()
-    loc_dict = req.location.model_dump() if req.location else None
+    profile = req.profile or current_profile or load_profile()
+    if req.farm_location and not profile.farm_location:
+        profile.farm_location = req.farm_location
+    if profile.farm_location and not profile.location:
+        profile.location = profile.farm_location
+    elif profile.location and not profile.farm_location:
+        profile.farm_location = profile.location
+
+    device_loc = req.device_location or req.location
+    device_loc_dict = device_loc.model_dump() if device_loc else (profile.device_location.model_dump() if getattr(profile, "device_location", None) else None)
+    farm_loc_str = profile.farm_location or profile.location or ""
+
     return StreamingResponse(
         AIAgent.process_stream(
             message=req.message,
             conversation_id=req.conversation_id,
             image_base64=req.image,
             profile=profile,
-            lang=req.lang or "en",
-            location=loc_dict
+            lang=req.lang or "te",
+            location=device_loc_dict,
+            device_location=device_loc_dict,
+            farm_location=farm_loc_str
         ),
         media_type="text/event-stream"
     )

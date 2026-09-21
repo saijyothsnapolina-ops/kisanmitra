@@ -796,9 +796,47 @@ MANDI_COORDINATES: Dict[str, Tuple[float, float]] = {
     "Mahbubnagar Mandi": (16.7433, 78.0039),
     "Nellore Mandi": (14.4426, 79.9865),
     "Byadgi Mandi": (14.6826, 75.4878),
-    "Haveri APMC": (14.7967, 75.3991),
     "Solapur Yard": (17.6599, 75.9064)
 }
+
+FARM_LOCATION_COORDINATES: Dict[str, Tuple[float, float]] = {
+    "cherla": (18.0833, 80.7000),
+    "bhadradri kothagudem": (17.5500, 80.6167),
+    "kothagudem": (17.5500, 80.6167),
+    "bhadrachalam": (17.6688, 80.8935),
+    "khammam": (17.2473, 80.1514),
+    "warangal": (17.9689, 79.5941),
+    "enumamula": (17.9850, 79.6200),
+    "guntur": (16.3067, 80.4365),
+    "tenali": (16.2430, 80.6400),
+    "palnadu": (16.2359, 80.0499),
+    "narasaraopet": (16.2359, 80.0499),
+    "chilakaluripet": (16.0892, 80.1672),
+    "vijayawada": (16.5062, 80.6480),
+    "krishna": (16.5062, 80.6480),
+    "byadgi": (14.6826, 75.4878),
+    "haveri": (14.7967, 75.3991),
+    "hyderabad": (17.3850, 78.4867),
+    "kurnool": (15.8281, 78.0373),
+    "adilabad": (19.6641, 78.5320),
+    "nirmal": (19.0964, 78.3428),
+    "nalgonda": (17.0575, 79.2684),
+    "suryapet": (17.1439, 79.6239),
+    "miryalaguda": (16.8711, 79.5631)
+}
+
+def get_coordinates_for_location(location_name: Optional[str]) -> Optional[Tuple[float, float]]:
+    """Resolve location text to geographic coordinates (lat, lon)."""
+    if not location_name:
+        return None
+    loc_lower = location_name.lower().strip()
+    for key, coords in FARM_LOCATION_COORDINATES.items():
+        if key in loc_lower:
+            return coords
+    for key, coords in MANDI_COORDINATES.items():
+        if key.lower() in loc_lower or loc_lower in key.lower():
+            return coords
+    return None
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculate great-circle distance between two GPS coordinates in kilometers."""
@@ -834,6 +872,8 @@ def find_nearby_mandis(lat: float, lon: float, crop: Optional[str] = None, max_k
                 "crop": rec["crop"],
                 "variety": rec.get("variety"),
                 "modal_price": rec.get("modal_price"),
+                "min_price": rec.get("min_price", rec.get("modal_price", 0)),
+                "max_price": rec.get("max_price", rec.get("modal_price", 0)),
                 "distance_km": dist,
                 "latitude": coords[0],
                 "longitude": coords[1]
@@ -864,6 +904,8 @@ def resolve_coordinates_to_district(lat: float, lon: float) -> Dict[str, Any]:
     return {
         "latitude": lat,
         "longitude": lon,
+        "village": district,
+        "mandal": district,
         "district": district,
         "state": state,
         "country": "India",
@@ -872,3 +914,105 @@ def resolve_coordinates_to_district(lat: float, lon: float) -> Dict[str, Any]:
         "display_name": f"{district}, {state}",
         "nearby_mandis": nearby[:5]
     }
+
+
+# ---------------------------------------------------------------------------
+# Indian Agricultural Locations Directory & Search
+# ---------------------------------------------------------------------------
+AGRICULTURAL_LOCATIONS: List[Dict[str, str]] = [
+    {"village": "Cherla", "mandal": "Cherla", "district": "Bhadradri Kothagudem", "state": "Telangana", "country": "India"},
+    {"village": "Kothagudem", "mandal": "Kothagudem", "district": "Bhadradri Kothagudem", "state": "Telangana", "country": "India"},
+    {"village": "Bhadrachalam", "mandal": "Bhadrachalam", "district": "Bhadradri Kothagudem", "state": "Telangana", "country": "India"},
+    {"village": "Khammam", "mandal": "Khammam Urban", "district": "Khammam", "state": "Telangana", "country": "India"},
+    {"village": "Madhira", "mandal": "Madhira", "district": "Khammam", "state": "Telangana", "country": "India"},
+    {"village": "Sathupalli", "mandal": "Sathupalli", "district": "Khammam", "state": "Telangana", "country": "India"},
+    {"village": "Warangal", "mandal": "Warangal", "district": "Warangal", "state": "Telangana", "country": "India"},
+    {"village": "Enumamula", "mandal": "Hanamkonda", "district": "Warangal", "state": "Telangana", "country": "India"},
+    {"village": "Narsampet", "mandal": "Narsampet", "district": "Warangal", "state": "Telangana", "country": "India"},
+    {"village": "Miryalaguda", "mandal": "Miryalaguda", "district": "Nalgonda", "state": "Telangana", "country": "India"},
+    {"village": "Nalgonda", "mandal": "Nalgonda", "district": "Nalgonda", "state": "Telangana", "country": "India"},
+    {"village": "Suryapet", "mandal": "Suryapet", "district": "Suryapet", "state": "Telangana", "country": "India"},
+    {"village": "Kodad", "mandal": "Kodad", "district": "Suryapet", "state": "Telangana", "country": "India"},
+    {"village": "Nizamabad", "mandal": "Nizamabad", "district": "Nizamabad", "state": "Telangana", "country": "India"},
+    {"village": "Armoor", "mandal": "Armoor", "district": "Nizamabad", "state": "Telangana", "country": "India"},
+    {"village": "Adilabad", "mandal": "Adilabad", "district": "Adilabad", "state": "Telangana", "country": "India"},
+    {"village": "Bhainsa", "mandal": "Bhainsa", "district": "Nirmal", "state": "Telangana", "country": "India"},
+    {"village": "Karimnagar", "mandal": "Karimnagar", "district": "Karimnagar", "state": "Telangana", "country": "India"},
+    {"village": "Jammikunta", "mandal": "Jammikunta", "district": "Karimnagar", "state": "Telangana", "country": "India"},
+    {"village": "Mahabubnagar", "mandal": "Mahabubnagar", "district": "Mahabubnagar", "state": "Telangana", "country": "India"},
+    {"village": "Badepalli", "mandal": "Jadcherla", "district": "Mahabubnagar", "state": "Telangana", "country": "India"},
+    {"village": "Guntur", "mandal": "Guntur", "district": "Guntur", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Tenali", "mandal": "Tenali", "district": "Guntur", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Mangalagiri", "mandal": "Mangalagiri", "district": "Guntur", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Narasaraopet", "mandal": "Narasaraopet", "district": "Palnadu", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Chilakaluripet", "mandal": "Chilakaluripet", "district": "Palnadu", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Sattenapalle", "mandal": "Sattenapalle", "district": "Palnadu", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Macherla", "mandal": "Macherla", "district": "Palnadu", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Vijayawada", "mandal": "Vijayawada Urban", "district": "Krishna", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Gudivada", "mandal": "Gudivada", "district": "Krishna", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Machilipatnam", "mandal": "Machilipatnam", "district": "Krishna", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Kurnool", "mandal": "Kurnool", "district": "Kurnool", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Yemmiganur", "mandal": "Yemmiganur", "district": "Kurnool", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Adoni", "mandal": "Adoni", "district": "Kurnool", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Nandyal", "mandal": "Nandyal", "district": "Nandyal", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Anantapur", "mandal": "Anantapur", "district": "Anantapur", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Kadapa", "mandal": "Kadapa", "district": "YSR Kadapa", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Tirupati", "mandal": "Tirupati Urban", "district": "Tirupati", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Nellore", "mandal": "Nellore", "district": "SPSR Nellore", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Ongole", "mandal": "Ongole", "district": "Prakasam", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Eluru", "mandal": "Eluru", "district": "Eluru", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Rajahmundry", "mandal": "Rajahmundry Urban", "district": "East Godavari", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Kakinada", "mandal": "Kakinada Urban", "district": "Kakinada", "state": "Andhra Pradesh", "country": "India"},
+    {"village": "Byadgi", "mandal": "Byadgi", "district": "Haveri", "state": "Karnataka", "country": "India"},
+    {"village": "Haveri", "mandal": "Haveri", "district": "Haveri", "state": "Karnataka", "country": "India"},
+    {"village": "Ranebennur", "mandal": "Ranebennur", "district": "Haveri", "state": "Karnataka", "country": "India"},
+    {"village": "Hubli", "mandal": "Hubli", "district": "Dharwad", "state": "Karnataka", "country": "India"},
+    {"village": "Bellary", "mandal": "Bellary", "district": "Bellary", "state": "Karnataka", "country": "India"},
+    {"village": "Raichur", "mandal": "Raichur", "district": "Raichur", "state": "Karnataka", "country": "India"},
+    {"village": "Nagpur", "mandal": "Nagpur", "district": "Nagpur", "state": "Maharashtra", "country": "India"},
+    {"village": "Amravati", "mandal": "Amravati", "district": "Amravati", "state": "Maharashtra", "country": "India"}
+]
+
+def search_locations(query: str, limit: int = 10) -> List[Dict[str, Any]]:
+    """Search agricultural locations matching query by village, mandal, district, or state."""
+    q = (query or "").strip().lower()
+    if not q:
+        return [
+            {
+                "display_name": f"{loc['village']}, {loc['district']}, {loc['state']}",
+                **loc
+            }
+            for loc in AGRICULTURAL_LOCATIONS[:limit]
+        ]
+
+    matched = []
+    seen = set()
+    for loc in AGRICULTURAL_LOCATIONS:
+        combo = f"{loc['village']} {loc['mandal']} {loc['district']} {loc['state']}".lower()
+        if q in combo:
+            display = f"{loc['village']}, {loc['district']}, {loc['state']}"
+            if display not in seen:
+                seen.add(display)
+                matched.append({
+                    "display_name": display,
+                    **loc
+                })
+        if len(matched) >= limit:
+            break
+
+    # If no predefined match or query has commas (custom location entered by user)
+    if not matched or ("," in query and len(matched) < limit):
+        parts = [p.strip() for p in query.split(",") if p.strip()]
+        custom_entry = {
+            "display_name": query.strip(),
+            "village": parts[0] if len(parts) > 0 else query.strip(),
+            "mandal": parts[1] if len(parts) > 1 else (parts[0] if len(parts) > 0 else ""),
+            "district": parts[1] if len(parts) > 1 else (parts[0] if len(parts) > 0 else ""),
+            "state": parts[2] if len(parts) > 2 else "India",
+            "country": parts[3] if len(parts) > 3 else "India"
+        }
+        if custom_entry["display_name"] not in seen:
+            matched.insert(0, custom_entry)
+
+    return matched[:limit]
+

@@ -1,6 +1,11 @@
 {
   "name": "",
+  "farm_location": "",
+  "farm_location_details": null,
   "location": "",
+  "device_location": null,
+  "gps_location": null,
+  "main_crop": "",
   "crops": [],
   "farm_size": "",
   "crop_variety": "",
@@ -9,7 +14,6 @@
   "irrigation_type": "",
   "growth_stage": "",
   "sowing_date": "",
-  "preferred_language": "en",
-  "completed": false,
-  "gps_location": null
+  "preferred_language": "te",
+  "completed": false
 }

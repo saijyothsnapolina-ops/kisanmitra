@@ -47,11 +47,11 @@ export const api = {
   /**
    * Send user message to AI assistant
    */
-  async sendChat({ message, image = null, action = null, profile = null, location = null, lang = 'en', conversation_id = null }) {
+  async sendChat({ message, image = null, action = null, profile = null, location = null, device_location = null, farm_location = null, lang = 'en', conversation_id = null }) {
     const res = await fetch(`${API_BASE}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, image, action, profile, location, lang, conversation_id })
+      body: JSON.stringify({ message, image, action, profile, location, device_location, farm_location, lang, conversation_id })
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -63,12 +63,12 @@ export const api = {
   /**
    * Send user message to AI assistant with live streaming SSE response
    */
-  async sendChatStream({ message, image = null, action = null, profile = null, location = null, lang = 'en', conversation_id = null, onChunk, onDone, onError }) {
+  async sendChatStream({ message, image = null, action = null, profile = null, location = null, device_location = null, farm_location = null, lang = 'en', conversation_id = null, onChunk, onDone, onError }) {
     try {
       const res = await fetch(`${API_BASE}/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, image, action, profile, location, lang, conversation_id })
+        body: JSON.stringify({ message, image, action, profile, location, device_location, farm_location, lang, conversation_id })
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -268,6 +268,51 @@ export const api = {
       throw new Error('Failed to load nearby mandis');
     }
     return res.json();
+  },
+
+  /**
+   * Search agricultural locations (villages, mandals, districts) for autocomplete
+   */
+  async searchLocations(query, limit = 10) {
+    const params = new URLSearchParams({ q: query, limit: limit.toString() });
+    const res = await fetch(`${API_BASE}/location/search?${params.toString()}`);
+    if (!res.ok) {
+      throw new Error('Failed to search locations');
+    }
+    return res.json();
+  },
+
+  /**
+   * Save farm location independently from device location
+   */
+  async saveFarmLocation(farmData) {
+    const res = await fetch(`${API_BASE}/location/farm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(farmData)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to save farm location');
+    }
+    return res.json();
+  },
+
+  /**
+   * Save device location independently from farm location
+   */
+  async saveDeviceLocation(deviceData) {
+    const res = await fetch(`${API_BASE}/location/device`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(deviceData)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to save device location');
+    }
+    return res.json();
   }
 };
+
 

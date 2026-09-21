@@ -37,6 +37,8 @@ const state = {
     growth_stage: ''
   },
   pendingMessage: null, // { text: string, image?: string, action?: string }
+  farmLocation: '',
+  deviceLocation: null,
   location: null, // { latitude, longitude, accuracy, district, mandal, state, nearest_market, nearest_distance_km }
   activeTab: 'chat',
   selectedImageBase64: null,
@@ -215,6 +217,20 @@ function cacheDOMElements() {
     editProfileBtn: document.getElementById('edit-profile-btn'),
     resetProfileBtn: document.getElementById('reset-profile-btn'),
 
+    // Location Separation Elements
+    displayFarmLocation: document.getElementById('display-farm-location'),
+    displayDeviceLocation: document.getElementById('display-device-location'),
+    btnChooseFarmLocation: document.getElementById('btn-choose-farm-location'),
+    btnDetectDeviceLocation: document.getElementById('btn-detect-device-location'),
+    deviceDetectHint: document.getElementById('device-detect-hint'),
+    farmLocationModalBackdrop: document.getElementById('farm-location-modal-backdrop'),
+    farmSearchInput: document.getElementById('farm-search-input'),
+    farmSearchSuggestions: document.getElementById('farm-search-suggestions'),
+    farmPickerCloseBtn: document.getElementById('farm-picker-close-btn'),
+    farmPickerCancelBtn: document.getElementById('farm-picker-cancel-btn'),
+    farmPickerSaveBtn: document.getElementById('farm-picker-save-btn'),
+    modalFarmLocSuggestions: document.getElementById('modal-farm-loc-suggestions'),
+
     // Profile Setup Modal
     modalBackdrop: document.getElementById('profile-modal-backdrop'),
     profileForm: document.getElementById('profile-form'),
@@ -314,6 +330,32 @@ function attachEventListeners() {
       requestUserLocation(false);
     });
   }
+  if (dom.btnChooseFarmLocation) {
+    dom.btnChooseFarmLocation.addEventListener('click', openFarmLocationModal);
+  }
+  if (dom.btnDetectDeviceLocation) {
+    dom.btnDetectDeviceLocation.addEventListener('click', () => {
+      requestUserLocation(true);
+    });
+  }
+  if (dom.farmPickerCloseBtn) {
+    dom.farmPickerCloseBtn.addEventListener('click', closeFarmLocationModal);
+  }
+  if (dom.farmPickerCancelBtn) {
+    dom.farmPickerCancelBtn.addEventListener('click', closeFarmLocationModal);
+  }
+  if (dom.farmPickerSaveBtn) {
+    dom.farmPickerSaveBtn.addEventListener('click', saveFarmLocationFromPicker);
+  }
+
+  // Setup location autocomplete for both farm picker and profile setup modal
+  setupLocationAutocomplete(dom.farmSearchInput, dom.farmSearchSuggestions, (selected) => {
+    // Optionally auto-select
+  });
+  setupLocationAutocomplete(dom.inputLocation, dom.modalFarmLocSuggestions, (selected) => {
+    // Optionally auto-select
+  });
+
 
   // Language Selector Pills
   if (dom.langPills) {
@@ -504,14 +546,21 @@ async function loadInitialState() {
     if (profile && profile.completed) {
       state.profileCompleted = true;
       state.profile = profile;
+      state.farmLocation = profile.farm_location || profile.location || '';
+      state.deviceLocation = profile.device_location || null;
       updateHeaderProfileUI(true);
       updateProfileViewUI();
-      if (profile.location && dom.headerLocationName) {
-        dom.headerLocationName.textContent = profile.location;
+      if (state.farmLocation && dom.headerLocationName) {
+        dom.headerLocationName.textContent = `🌾 ${state.farmLocation.split(',')[0]}`;
       }
     } else {
       state.profileCompleted = false;
+      if (profile) {
+        state.farmLocation = profile.farm_location || profile.location || '';
+        state.deviceLocation = profile.device_location || null;
+      }
       updateHeaderProfileUI(false);
+      updateProfileViewUI();
     }
   } catch (err) {
     console.warn('Initial profile load error:', err);
@@ -533,10 +582,16 @@ async function requestUserLocation(promptUser = false) {
   const t = translations[state.lang] || translations.en;
 
   if (!navigator.geolocation) {
+    const msg = t.gpsUnsupported || 'Geolocation is not supported in this browser.';
     if (dom.gpsStatusHint) {
-      dom.gpsStatusHint.textContent = t.gpsUnsupported || 'Geolocation is not supported in this browser.';
+      dom.gpsStatusHint.textContent = msg;
       dom.gpsStatusHint.style.color = '#dc2626';
       dom.gpsStatusHint.style.display = 'block';
+    }
+    if (dom.deviceDetectHint) {
+      dom.deviceDetectHint.textContent = msg;
+      dom.deviceDetectHint.style.color = '#dc2626';
+      dom.deviceDetectHint.style.display = 'block';
     }
     return;
   }
@@ -546,8 +601,10 @@ async function requestUserLocation(promptUser = false) {
     dom.gpsStatusHint.style.color = '#0284c7';
     dom.gpsStatusHint.style.display = 'block';
   }
-  if (dom.headerLocationName) {
-    dom.headerLocationName.textContent = 'Detecting...';
+  if (dom.deviceDetectHint) {
+    dom.deviceDetectHint.textContent = t.gpsDetecting || 'Detecting device GPS...';
+    dom.deviceDetectHint.style.color = '#0284c7';
+    dom.deviceDetectHint.style.display = 'block';
   }
 
   navigator.geolocation.getCurrentPosition(
@@ -556,7 +613,7 @@ async function requestUserLocation(promptUser = false) {
         const { latitude, longitude, accuracy } = position.coords;
         const res = await api.resolveLocation({ latitude, longitude, accuracy });
 
-        state.location = {
+        const devData = {
           latitude,
           longitude,
           accuracy: Math.round(accuracy || 0),
@@ -568,19 +625,38 @@ async function requestUserLocation(promptUser = false) {
           captured_at: res.captured_at
         };
 
-        const locDisplay = res.display_name || `${res.district}, ${res.state}`;
-        if (dom.inputLocation) {
-          dom.inputLocation.value = locDisplay;
+        state.deviceLocation = devData;
+        state.location = devData;
+
+        // Persist device location independently to backend without overwriting farm location
+        api.saveDeviceLocation(devData).catch(e => console.warn('Failed to save device location:', e));
+
+        // Update device display in profile card
+        if (dom.displayDeviceLocation) {
+          dom.displayDeviceLocation.textContent = `📱 ${res.district}, ${res.state}${res.nearest_market ? ` (Nearest: ${res.nearest_market})` : ''}`;
         }
+        if (dom.deviceDetectHint) {
+          dom.deviceDetectHint.textContent = `✓ Detected: ${res.district}, ${res.state} (Accuracy: ±${Math.round(accuracy)}m)`;
+          dom.deviceDetectHint.style.color = '#16a34a';
+          dom.deviceDetectHint.style.display = 'block';
+        }
+
+        // Header location pill: show farm if set, else device
         if (dom.headerLocationName) {
-          dom.headerLocationName.textContent = res.nearest_market ? `${res.district} (${res.nearest_distance_km}km)` : res.district;
+          if (state.farmLocation) {
+            dom.headerLocationName.textContent = `🌾 ${state.farmLocation.split(',')[0]}`;
+          } else {
+            dom.headerLocationName.textContent = res.nearest_market ? `${res.district} (${res.nearest_distance_km}km)` : res.district;
+          }
         }
         if (dom.headerLocationBtn) {
           dom.headerLocationBtn.classList.add('active');
-          dom.headerLocationBtn.title = `Exact GPS: ${res.district} • Nearest Mandi: ${res.nearest_market} (${res.nearest_distance_km} km)`;
+          const farmStr = state.farmLocation ? `Farm: ${state.farmLocation} • ` : '';
+          dom.headerLocationBtn.title = `${farmStr}Device GPS: ${res.district} • Nearest Mandi: ${res.nearest_market} (${res.nearest_distance_km} km)`;
         }
+
         if (dom.gpsStatusHint) {
-          dom.gpsStatusHint.textContent = `✓ ${res.display_name} • ${t.nearbyMandiLabel || 'Nearest APMC Mandi:'} ${res.nearest_market} (${res.nearest_distance_km} km)`;
+          dom.gpsStatusHint.textContent = `✓ Device GPS: ${res.display_name} • Mandi: ${res.nearest_market} (${res.nearest_distance_km} km). (Farm location remains independent)`;
           dom.gpsStatusHint.style.color = '#16a34a';
           dom.gpsStatusHint.style.display = 'block';
         }
@@ -599,8 +675,13 @@ async function requestUserLocation(promptUser = false) {
         dom.gpsStatusHint.style.color = '#dc2626';
         dom.gpsStatusHint.style.display = 'block';
       }
+      if (dom.deviceDetectHint) {
+        dom.deviceDetectHint.textContent = t.gpsDenied || 'Location permission denied.';
+        dom.deviceDetectHint.style.color = '#dc2626';
+        dom.deviceDetectHint.style.display = 'block';
+      }
       if (dom.headerLocationName) {
-        dom.headerLocationName.textContent = (state.profile && state.profile.location) ? state.profile.location : 'Detect Location';
+        dom.headerLocationName.textContent = state.farmLocation ? `🌾 ${state.farmLocation.split(',')[0]}` : 'Detect Location';
       }
     },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
@@ -817,6 +898,21 @@ function setLanguage(lang) {
   const backChatBtn = document.querySelector('#view-profile .btn-secondary');
   if (backChatBtn) backChatBtn.textContent = t.backToChatBtnText;
 
+  // Farm and Device Location labels
+  const lblFarmLocH = document.getElementById('lbl-farm-loc-heading');
+  if (lblFarmLocH) lblFarmLocH.textContent = t.farmLocationTitle || 'Farm Location';
+  const lblFarmLocS = document.getElementById('lbl-farm-loc-sub');
+  if (lblFarmLocS) lblFarmLocS.textContent = t.farmLocationDesc || 'Where your crops grow (Used for advisories & farm mandi rates)';
+  const lblDevLocH = document.getElementById('lbl-device-loc-heading');
+  if (lblDevLocH) lblDevLocH.textContent = t.deviceLocationTitle || 'Current Device Location';
+  const lblDevLocS = document.getElementById('lbl-device-loc-sub');
+  if (lblDevLocS) lblDevLocS.textContent = t.deviceLocationDesc || "Where your phone is physically right now (Used for 'here' or 'near me')";
+  const lblChooseFarmB = document.getElementById('lbl-choose-farm-btn');
+  if (lblChooseFarmB) lblChooseFarmB.textContent = t.chooseFarmLocationBtn || 'Choose Farm Location';
+  const lblDetectDevB = document.getElementById('lbl-detect-device-btn');
+  if (lblDetectDevB) lblDetectDevB.textContent = t.detectDeviceLocationBtn || 'Detect My Location';
+
+
   // Weather section static headers
   const wH2 = document.querySelector('#view-weather h2');
   if (wH2) wH2.textContent = t.weatherHeading;
@@ -1007,14 +1103,19 @@ function handleSendInput() {
  *   Proceed immediately with AI answer!
  */
 function handleInteraction(interaction) {
-  if (!state.profileCompleted) {
-    // Preserve query
+  const qClean = (interaction.text || '').trim().toLowerCase();
+  const isGeneral = /^(hello|hi|hey|namaste|namaskaram|namaskar)\b/i.test(qClean) ||
+    /(\d+\s*[\+\-\*\/xX÷\^]\s*\d+|\d+%\s*of\s*\d+)/.test(qClean) ||
+    /(why is the sky blue|what is photosynthesis|capital of|who is|leave letter|translate|joke)/i.test(qClean);
+
+  if (!state.profileCompleted && !isGeneral) {
+    // Preserve query for farming inquiries and prompt farm profile
     state.pendingMessage = interaction;
     openProfileModal(false);
     return;
   }
 
-  // Profile already exists: execute query immediately
+  // Profile already exists or general conversational inquiry: execute query immediately
   executeUserQuery(interaction);
 }
 
@@ -1044,6 +1145,9 @@ function executeUserQuery(interaction) {
   let streamBubble = null;
   let streamBody = null;
 
+  const activeFarmLoc = state.farmLocation || (state.profile && (state.profile.farm_location || state.profile.location)) || '';
+  const activeDeviceLoc = state.deviceLocation || state.location;
+
   // Use live streaming SSE response with smooth chunk appending
   api.sendChatStream({
     message: interaction.text,
@@ -1051,6 +1155,8 @@ function executeUserQuery(interaction) {
     action: interaction.action,
     profile: state.profile,
     location: state.location,
+    device_location: activeDeviceLoc,
+    farm_location: activeFarmLoc,
     lang: state.lang,
     conversation_id: state.conversationId,
     onChunk: (chunk, convId) => {
@@ -1113,6 +1219,8 @@ function executeUserQuery(interaction) {
         action: interaction.action,
         profile: state.profile,
         location: state.location,
+        device_location: activeDeviceLoc,
+        farm_location: activeFarmLoc,
         lang: state.lang,
         conversation_id: state.conversationId
       })
@@ -1167,7 +1275,7 @@ function openProfileModal(isEditMode = false) {
 
   // Populate form with existing data
   dom.inputName.value = state.profile.name || '';
-  dom.inputLocation.value = state.profile.location || '';
+  dom.inputLocation.value = state.farmLocation || state.profile.farm_location || state.profile.location || '';
   dom.inputSize.value = state.profile.farm_size || '';
   dom.inputVariety.value = state.profile.crop_variety || '';
   dom.inputSoil.value = state.profile.soil_type || '';
@@ -1202,6 +1310,114 @@ function openProfileModal(isEditMode = false) {
 function closeProfileModal() {
   dom.modalBackdrop.classList.remove('visible');
 }
+
+// -------------------------------------------------------------
+// Location Autocomplete & Farm Location Picker
+// -------------------------------------------------------------
+let farmSearchDebounce = null;
+
+function setupLocationAutocomplete(inputEl, suggestionsEl, onSelect) {
+  if (!inputEl || !suggestionsEl) return;
+
+  inputEl.addEventListener('input', () => {
+    const q = inputEl.value.trim();
+    if (farmSearchDebounce) clearTimeout(farmSearchDebounce);
+
+    if (q.length < 2) {
+      suggestionsEl.style.display = 'none';
+      suggestionsEl.innerHTML = '';
+      return;
+    }
+
+    farmSearchDebounce = setTimeout(async () => {
+      try {
+        const res = await api.searchLocations(q);
+        if (res.status === 'success' && res.data && res.data.length > 0) {
+          suggestionsEl.innerHTML = '';
+          res.data.forEach(loc => {
+            const item = document.createElement('div');
+            item.className = 'search-suggestion-item';
+            item.innerHTML = `
+              <span class="suggestion-icon">📍</span>
+              <div>
+                <div style="font-weight: 600;">${loc.display_name}</div>
+                <div class="suggestion-meta">Type: ${loc.type} ${loc.nearest_market ? `• Nearest Mandi: ${loc.nearest_market}` : ''}</div>
+              </div>
+            `;
+            item.addEventListener('click', () => {
+              inputEl.value = loc.display_name;
+              suggestionsEl.style.display = 'none';
+              if (onSelect) onSelect(loc);
+            });
+            suggestionsEl.appendChild(item);
+          });
+          suggestionsEl.style.display = 'block';
+        } else {
+          suggestionsEl.style.display = 'none';
+        }
+      } catch (e) {
+        console.warn('Location search error:', e);
+      }
+    }, 200);
+  });
+
+  // Close suggestions on outside click
+  document.addEventListener('click', (e) => {
+    if (!inputEl.contains(e.target) && !suggestionsEl.contains(e.target)) {
+      suggestionsEl.style.display = 'none';
+    }
+  });
+}
+
+function openFarmLocationModal() {
+  if (dom.farmSearchInput) {
+    dom.farmSearchInput.value = state.farmLocation || (state.profile && (state.profile.farm_location || state.profile.location)) || '';
+  }
+  if (dom.farmSearchSuggestions) {
+    dom.farmSearchSuggestions.style.display = 'none';
+    dom.farmSearchSuggestions.innerHTML = '';
+  }
+  if (dom.farmLocationModalBackdrop) {
+    dom.farmLocationModalBackdrop.classList.add('visible');
+    setTimeout(() => {
+      if (dom.farmSearchInput) dom.farmSearchInput.focus();
+    }, 100);
+  }
+}
+
+function closeFarmLocationModal() {
+  if (dom.farmLocationModalBackdrop) {
+    dom.farmLocationModalBackdrop.classList.remove('visible');
+  }
+}
+
+async function saveFarmLocationFromPicker() {
+  const locVal = dom.farmSearchInput ? dom.farmSearchInput.value.trim() : '';
+  if (!locVal) {
+    alert('Please enter or search for a location.');
+    return;
+  }
+  try {
+    const res = await api.saveFarmLocation({ farm_location: locVal });
+    state.farmLocation = res.farm_location;
+    if (state.profile) {
+      state.profile.farm_location = res.farm_location;
+      state.profile.location = res.farm_location;
+    }
+    if (dom.inputLocation) {
+      dom.inputLocation.value = res.farm_location;
+    }
+    if (dom.headerLocationName) {
+      dom.headerLocationName.textContent = `🌾 ${res.farm_location.split(',')[0]}`;
+    }
+    updateProfileViewUI();
+    closeFarmLocationModal();
+  } catch (err) {
+    console.error('Error saving farm location:', err);
+    alert(`Could not save farm location: ${err.message}`);
+  }
+}
+
 
 function renderCropChips(selectedCrops) {
   dom.cropChipsContainer.innerHTML = '';
@@ -1288,6 +1504,7 @@ async function handleProfileFormSubmit(e) {
   const payload = {
     name,
     location,
+    farm_location: location,
     crops,
     farm_size: farmSize,
     crop_variety: dom.inputVariety.value.trim(),
@@ -1300,6 +1517,7 @@ async function handleProfileFormSubmit(e) {
   try {
     const res = await api.saveProfile(payload);
     state.profile = res.profile;
+    state.farmLocation = location;
     state.profileCompleted = true;
     updateHeaderProfileUI(true);
     updateProfileViewUI();
@@ -1324,6 +1542,8 @@ async function handleResetProfile() {
     try {
       await api.resetProfile();
       state.profileCompleted = false;
+      state.farmLocation = '';
+      state.deviceLocation = null;
       state.profile = {
         name: '',
         location: '',
@@ -1351,8 +1571,23 @@ function updateProfileViewUI() {
   const t = translations[state.lang] || translations.en;
   const cropNames = cropTranslations[state.lang] || cropTranslations.en;
 
+  const farmLoc = p.farm_location || p.location || state.farmLocation;
   dom.profileDisplayName.textContent = p.name || t.notSet;
-  dom.profileDisplayLocation.textContent = p.location ? `📍 ${p.location}` : t.locationNotSet;
+  dom.profileDisplayLocation.textContent = farmLoc ? `🌾 ${farmLoc}` : t.locationNotSet;
+
+  if (dom.displayFarmLocation) {
+    dom.displayFarmLocation.textContent = farmLoc ? `🌾 ${farmLoc}` : (t.locationNotSet || 'Location not set');
+  }
+
+  if (dom.displayDeviceLocation) {
+    const dev = state.deviceLocation || (p.device_location && p.device_location.district ? p.device_location : null);
+    if (dev && dev.district) {
+      dom.displayDeviceLocation.textContent = `📱 ${dev.district}, ${dev.state || ''}${dev.nearest_market ? ` (Nearest: ${dev.nearest_market})` : ''}`;
+    } else {
+      dom.displayDeviceLocation.textContent = t.deviceLocationNotDetected || 'Not detected yet';
+    }
+  }
+
   
   if (p.crops && p.crops.length > 0) {
     dom.profileDisplayCrops.textContent = p.crops.map(c => cropNames[c] || c).join(', ');

@@ -45,6 +45,8 @@ class ConversationSession:
         self.active_date: str = "Yesterday"
         self.last_tool_used: Optional[str] = None
         self.gps_location: Optional[Dict[str, Any]] = None
+        self.device_location: Optional[Dict[str, Any]] = None
+        self.farm_location: Optional[str] = None
 
     def add_message(self, role: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> Message:
         msg = Message(role=role, content=content, metadata=metadata)
@@ -219,17 +221,25 @@ class ConversationalAIEngine:
 
     LOCATIONS_VOCAB = [
         "guntur", "warangal", "khammam", "narasaraopet", "enumamula", "byadgi",
-        "haveri", "chilakaluripet", "vijayawada", "tenali", "గుంటూరు", "వరంగల్", "ఖమ్మం", "गुंटूर", "वारंगल", "खम्मम"
+        "haveri", "chilakaluripet", "vijayawada", "tenali", "cherla", "kothagudem",
+        "bhadradri", "palnadu", "krishna", "kurnool", "adilabad", "nirmal",
+        "hyderabad", "nalgonda", "suryapet", "mahabubnagar",
+        "గుంటూరు", "వరంగల్", "ఖమ్మం", "చెర్ల", "కొత్తగూడెం", "गुंटूर", "वारंगल", "खम्मम", "चेर्ला"
     ]
 
     @classmethod
-    def detect_language(cls, text: str, fallback_lang: str = "en") -> str:
+    def detect_language(cls, text: str, fallback_lang: Optional[str] = None) -> str:
         """
-        Detect whether user text/speech is Telugu, Hindi, English, or Mixed.
-        Prioritizes actual native script, followed by transliterated keywords.
+        Detect user language from text or speech:
+        1. Native Telugu script -> 'te'
+        2. Native Devanagari script -> 'hi'
+        3. Transliterated Telugu / mixed Telugu-English farmer speech -> 'te'
+        4. Transliterated Hindi / mixed Hindi-English farmer speech -> 'hi'
+        5. English query (detected through English vocabulary / markers) -> 'en'
+        6. Uncertain / ambiguous -> 'te' (Telugu default ONLY when uncertain)
         """
-        if not text:
-            return fallback_lang or "en"
+        if not text or not text.strip():
+            return "te"
 
         # 1. Native script detection (high confidence)
         has_telugu_script = bool(re.search(r'[\u0C00-\u0C7F]', text))
@@ -239,34 +249,66 @@ class ConversationalAIEngine:
         if has_hindi_script and not has_telugu_script:
             return "hi"
 
-        # 2. Transliterated / Romanized keyword detection
         t_lower = text.lower()
+        words = set(re.findall(r'[a-zA-Z]+', t_lower))
+        if not words:
+            # Pure numbers, symbols, or unclassifiable
+            return "te"
 
+        # 2. Transliterated / Romanized keyword detection
         te_translit_tokens = {
             "entha", "emi", "ela", "eppudu", "ekkada", "dharalu", "dhara", "cheppandi",
-            "cheppava", "cheppu", "panta", "mirapa", "eroju", "ninnati", "ivvala",
-            "ninnatiki", "bavundi", "undi", "undhi", "unna", "varsham", "mandulu", "mandhi",
-            "veskovali", "chala", "kavali", "manchi", "thota", "gunta", "rayithe", "cheyali"
+            "cheppava", "cheppu", "panta", "mirapa", "eroju", "eeroju", "ninnati", "ivvala",
+            "ninnatiki", "bavundi", "bagunda", "undi", "undhi", "unna", "varsham", "mandulu", "mandhi",
+            "veskovali", "chala", "kavali", "manchi", "thota", "gunta", "rayithe", "cheyali",
+            "cheyyali", "naa", "maa", "gurinchi", "ekkuva", "atyadhika", "mari", "enti",
+            "ivvandi", "adagandi", "choodandi", "chesukovale", "pettali", "teliyali", "meeru",
+            "nenu", "koda", "kooda", "cheppara", "vuntundha", "unnara"
         }
 
         hi_translit_tokens = {
-            "kya", "kitna", "kitni", "bhav", "rate", "kaha", "kahan", "aaj", "kal",
+            "kya", "kitna", "kitni", "bhav", "kaha", "kahan", "aaj", "kal",
             "kisan", "batao", "bataye", "batayein", "daam", "chahiye", "baarish", "kheti",
-            "fasal", "mandi", "mein", "kaise", "hoga", "hai", "hain", "sakte", "shuru", "karein"
+            "fasal", "mandi", "mein", "kaise", "hoga", "hai", "hain", "sakte", "shuru", "karein",
+            "meri", "mera", "bataiye", "uchattam", "sabse", "zyada", "jyada", "paani", "dawa",
+            "karo", "batana"
         }
 
-        words = set(re.findall(r'[a-zA-Z]+', t_lower))
         te_matches = len(words.intersection(te_translit_tokens))
         hi_matches = len(words.intersection(hi_translit_tokens))
 
-        if te_matches > hi_matches and te_matches >= 1:
+        if te_matches > 0 and te_matches >= hi_matches:
             return "te"
-        if hi_matches > te_matches and hi_matches >= 1:
+        if hi_matches > 0 and hi_matches > te_matches:
             return "hi"
 
-        if fallback_lang in ["te", "hi", "en"]:
-            return fallback_lang
-        return "en"
+        # 3. English detection (common grammar / sentence markers / vocabulary)
+        en_markers = {
+            "what", "where", "which", "how", "when", "why", "who", "whom", "whose",
+            "is", "are", "was", "were", "be", "been", "being", "the", "a", "an",
+            "for", "to", "in", "at", "of", "and", "or", "by", "from", "with", "about",
+            "price", "prices", "weather", "crop", "crops", "farm", "market", "markets",
+            "today", "yesterday", "tomorrow", "highest", "lowest", "compare", "comparison",
+            "tell", "show", "give", "advice", "guidance", "calculate", "write",
+            "photosynthesis", "hello", "hi", "hey", "fertilizer", "soil", "my", "you", "your",
+            "can", "could", "would", "should", "will", "please", "selling", "help",
+            "good", "morning", "evening", "capital", "science", "joke", "explain", "letter",
+            "draft", "meaning", "translate", "translation", "rate", "rates", "mandi",
+            "mandis", "diff", "difference", "spread", "history", "do", "does", "did",
+            "have", "has", "had", "current", "here", "near", "around", "me"
+        }
+        en_matches = len(words.intersection(en_markers))
+        if en_matches >= 1:
+            return "en"
+
+        # 4. If all words are ASCII alphabet and no Telugu/Hindi markers, check word count
+        # Single isolated word that is not recognized (e.g. uncertain token) -> 'te'
+        # Multiple ASCII words without any markers -> English if long enough, else 'te'
+        if len(words) >= 3:
+            return "en"
+
+        # 5. Default when language detection is uncertain -> Telugu ('te')
+        return "te"
 
     @classmethod
     def normalize_agricultural_speech(cls, text: str) -> str:
@@ -276,7 +318,7 @@ class ConversationalAIEngine:
         t = text
         # Variety phonetics
         t = re.sub(r'\b(three\s*forty\s*one|three\s*four\s*one|3\s*4\s*1)\b', '341', t, flags=re.I)
-        t = re.sub(r'\b(theja|the\s*ja)\b', 'Teja', t, flags=re.I)
+        t = re.sub(r'\b(theja|the\s*ja)\b', 'teja', t, flags=re.I)
         t = re.sub(r'\b(byadagi|bedgi)\b', 'Byadgi', t, flags=re.I)
         t = re.sub(r'\b(wonder\s*hot|wander\s*hot)\b', 'Wonder Hot', t, flags=re.I)
         t = re.sub(r'\b(guntur\s*sannam|guntoor\s*sannam)\b', 'Guntur Sannam', t, flags=re.I)
@@ -521,106 +563,133 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         return None
 
     @classmethod
-    def detect_language(cls, text: str, fallback_lang: str = "en") -> str:
-        """Detects whether text is Telugu (native/transliterated), Hindi (native/transliterated), or English."""
-        if not text:
-            return fallback_lang or "en"
+    def check_general_knowledge(cls, query: str, lang: str) -> Optional[Tuple[str, str]]:
+        """Directly answers general knowledge, geography, science, and history questions without agriculture context."""
+        q = query.lower().strip()
 
-        # 1. Native Unicode block checks
-        # Telugu Unicode range: \u0c00-\u0c7f
-        if re.search(r'[\u0c00-\u0c7f]', text):
-            return "te"
-        # Devanagari / Hindi Unicode range: \u0900-\u097f
-        if re.search(r'[\u0900-\u097f]', text):
-            return "hi"
-
-        # 2. Transliterated Farmer Speech Detection
-        t_lower = text.lower()
-        words = set(re.findall(r'[a-z]+', t_lower))
-
-        # Clear grammatical markers that are distinctly Telugu or Hindi
-        telugu_grammatical = {
-            "entha", "enti", "ela", "ekkada", "cheppandi", "cheyali", "cheyyali",
-            "dharalu", "thota", "panta", "varsham", "vuntundha", "unnaara",
-            "eeroju", "eroju", "choodandi", "ivvandi", "adagandi", "mari"
+        # Capitals
+        capitals = {
+            "france": ("Paris", "పారిస్", "पेरिस"),
+            "india": ("New Delhi", "న్యూఢిల్లీ", "नई दिल्ली"),
+            "telangana": ("Hyderabad", "హైదరాబాద్", "हैदराबाद"),
+            "andhra pradesh": ("Amaravati", "అమరావతి", "अमरावती"),
+            "ap": ("Amaravati", "అమరావతి", "अमरावती"),
+            "karnataka": ("Bengaluru", "బెంగళూరు", "बेंगलुरु"),
+            "tamil nadu": ("Chennai", "చెన్నై", "चेन्नई"),
+            "maharashtra": ("Mumbai", "ముంబై", "मुंबई"),
+            "united states": ("Washington, D.C.", "వాషింగ్టన్ డీసీ", "वॉशिंगटन डी.सी."),
+            "usa": ("Washington, D.C.", "వాషింగ్టన్ డీసీ", "वॉशिंगटन डी.सी."),
+            "japan": ("Tokyo", "టోక్యో", "टोक्यो"),
+            "united kingdom": ("London", "లండన్", "लंदन"),
+            "uk": ("London", "లండన్", "लंदन"),
+            "england": ("London", "లండన్", "लंदन"),
+            "germany": ("Berlin", "బెర్లిన్", "बर्लिन"),
+            "russia": ("Moscow", "మాస్కో", "मास्को"),
+            "australia": ("Canberra", "కాన్‌బెర్రా", "कैनबरा"),
+            "china": ("Beijing", "బీజింగ్", "बीजिंग")
         }
+        if "capital" in q or "రాజధాని" in q or "राजधानी" in q:
+            for country, (cap_en, cap_te, cap_hi) in capitals.items():
+                if country in q or country.replace(" ", "") in q.replace(" ", ""):
+                    country_title = country.title()
+                    if lang == "te":
+                        reply = f"**{country_title} రాజధాని: {cap_te} ({cap_en})**"
+                        spoken = f"{country_title} రాజధాని {cap_te}."
+                    elif lang == "hi":
+                        reply = f"**{country_title} की राजधानी: {cap_hi} ({cap_en})**"
+                        spoken = f"{country_title} की राजधानी {cap_hi} है।"
+                    else:
+                        reply = f"The capital of **{country_title}** is **{cap_en}**."
+                        spoken = f"The capital of {country_title} is {cap_en}."
+                    return reply, spoken
 
-        hindi_grammatical = {
-            "kya", "hai", "bhav", "kahan", "kaise", "karein", "aaj", "batao",
-            "khet", "fasal", "kitna", "chahiye", "sabse", "zyada", "jyada",
-            "paani", "dawa"
-        }
+        # Why is the sky blue?
+        if any(k in q for k in ["why is the sky blue", "why sky is blue", "ఆకాశం ఎందుకు నీలంగా", "ఆకాశం నీలం", "आसमान नीला क्यों"]):
+            if lang == "te":
+                reply = """**ఆకాశం ఎందుకు నీలంగా కనిపిస్తుంది?**\n\nసూర్యకాంతి భూమి వాతావరణంలోకి ప్రవేశించినప్పుడు, వాతావరణంలోని గాలి అణువులు మరియు సూక్ష్మ కణాలు కాంతిని అన్ని దిశలలో వెదజల్లుతాయి (దీనిని **రైలీ స్కాటరింగ్ - Rayleigh Scattering** అంటారు).\n\nసూర్యకాంతిలోని రంగులలో నీలి రంగు తక్కువ తరంగదైర్ఘ్యం (Shorter wavelength) కలిగి ఉండడం వల్ల, ఎరుపు రంగు కంటే ఎక్కువగా చెల్లాచెదురై మన కంటికి ఆకాశం నీలంగా కనిపిస్తుంది."""
+                spoken = "సూర్యరశ్మిలోని నీలి రంగు తక్కువ తరంగదైర్ఘ్యం వల్ల వాతావరణంలో ఎక్కువగా చెల్లాచెదురవుతుంది (Rayleigh Scattering), అందుకే ఆకాశం నీలంగా కనిపిస్తుంది."
+            elif lang == "hi":
+                reply = """**आसमान नीला क्यों दिखाई देता है?**\n\nसूर्य का प्रकाश जब पृथ्वी के वायुमंडल में प्रवेश करता है, तो हवा के कण नीले रंग के प्रकाश को अन्य रंगों की तुलना में अधिक बिखेरते हैं (इसे **रेले प्रकीर्णन - Rayleigh Scattering** कहते हैं)।\n\nनीले रंग की तरंग दैर्ध्य (wavelength) छोटी होने के कारण यह चारों ओर सबसे ज्यादा फैलता है, इसलिए हमें आसमान नीला दिखाई देता है।"""
+                spoken = "रेले प्रकीर्णन के कारण नीले रंग का प्रकाश वायुमंडल में सबसे अधिक बिखरता है, जिससे आसमान नीला दिखाई देता है।"
+            else:
+                reply = """**Why is the sky blue?**\n\nSunlight reaches Earth's atmosphere and is scattered in all directions by gases and particles in the air. This phenomenon is called **Rayleigh Scattering**.\n\nBlue light travels as smaller, shorter waves than other colors in the visible spectrum, so it gets scattered much more than longer red waves. This scattered blue light is what we see across the sky."""
+                spoken = "The sky appears blue because molecules in the atmosphere scatter short blue wavelengths of sunlight more than other colors, a process known as Rayleigh scattering."
+            return reply, spoken
 
-        # Distinct English indicator words
-        english_indicators = {
-            "what", "where", "when", "how", "which", "is", "are", "the", "in",
-            "prices", "price", "market", "weather", "today", "yesterday", "forecast"
-        }
+        # What is water?
+        if any(k in q for k in ["what is water", "water formula", "నీరు అంటే ఏమిటి", "पानी क्या है"]):
+            if lang == "te":
+                reply = "**నీరు (Water - H₂O):** రెండు హైడ్రోజన్ పరమాణువులు మరియు ఒక ఆక్సిజన్ పరమాణువు కలయికతో ఏర్పడిన రసాయన సమ్మేళనం. ఇది భూమిపై సమస్త జీవకోటికి ప్రాణాధారమైన ద్రవం."
+                spoken = "నీరు అనేది రెండు హైడ్రోజన్ మరియు ఒక ఆక్సిజన్ పరమాణువులతో ఏర్పడిన హెచ్ టూ ఓ రసాయన సమ్మేళనం."
+            elif lang == "hi":
+                reply = "**जल / पानी (H₂O):** दो हाइड्रोजन परमाणुओं और एक ऑक्सीजन परमाणु के रासायनिक संयोजन से बना यौगिक है। यह पृथ्वी पर समस्त जीवन का आधार है।"
+                spoken = "पानी का रासायनिक सूत्र H2O है, जो दो हाइड्रोजन और एक ऑक्सीजन परमाणु से मिलकर बनता है।"
+            else:
+                reply = "**Water (H₂O)** is a transparent, odorless, and tasteless chemical compound made of two hydrogen atoms bonded to one oxygen atom. It covers about 71% of Earth's surface and is essential for all known forms of life."
+                spoken = "Water is a chemical compound consisting of two hydrogen atoms and one oxygen atom with the formula H2O."
+            return reply, spoken
 
-        te_matches = words.intersection(telugu_grammatical)
-        hi_matches = words.intersection(hindi_grammatical)
-        en_matches = words.intersection(english_indicators)
+        # Solar system / planets
+        if any(k in q for k in ["how many planets", "solar system", "గ్రహాలు ఎన్ని", "सौर मंडल में कितने ग्रह"]):
+            if lang == "te":
+                reply = """**సౌర కుటుంబంలో 8 గ్రహాలు ఉన్నాయి:**\n\n1. బుధుడు (Mercury)\n2. శుక్రుడు (Venus)\n3. భూమి (Earth)\n4. అంగారకుడు / కుజుడు (Mars)\n5. బృహస్పతి (Jupiter)\n6. శని (Saturn)\n7. యురేనస్ (Uranus)\n8. నెప్ట్యూన్ (Neptune)"""
+                spoken = "సౌర కుటుంబంలో సూర్యుని చుట్టూ తిరిగే 8 ప్రధాన గ్రహాలు ఉన్నాయి."
+            elif lang == "hi":
+                reply = """**हमारे सौर मंडल में 8 ग्रह हैं:**\n\n1. बुध (Mercury)\n2. शुक्र (Venus)\n3. पृथ्वी (Earth)\n4. मंगल (Mars)\n5. बृहस्पति (Jupiter)\n6. शनि (Saturn)\n7. यूरेनस (Uranus)\n8. नेपच्यून (Neptune)"""
+                spoken = "हमारे सौर मंडल में कुल 8 ग्रह हैं।"
+            else:
+                reply = """**There are 8 planets in our Solar System:**\n\n1. Mercury\n2. Venus\n3. Earth\n4. Mars\n5. Jupiter\n6. Saturn\n7. Uranus\n8. Neptune"""
+                spoken = "There are 8 planets in our Solar System orbiting the Sun."
+            return reply, spoken
 
-        if len(te_matches) > 0 and len(te_matches) >= len(hi_matches):
-            return "te"
-        if len(hi_matches) > 0 and len(hi_matches) > len(te_matches):
-            return "hi"
+        # Days in a year
+        if any(k in q for k in ["how many days in a year", "days in year", "సంవత్సరానికి ఎన్ని రోజులు", "साल में कितने दिन"]):
+            reply = "A standard calendar year has **365 days**, while a **leap year** (occurring every 4 years) has **366 days**."
+            spoken = "There are 365 days in a normal year and 366 days in a leap year."
+            return reply, spoken
 
-        if len(en_matches) > 0:
-            return "en"
+        # Speed of light
+        if "speed of light" in q or "కాంతి వేగం" in q or "प्रकाश की गति" in q:
+            reply = "The **speed of light** in a vacuum is approximately **299,792 kilometers per second** (about $3 \\times 10^8$ meters per second or ~186,282 miles per second)."
+            spoken = "The speed of light is approximately 300,000 kilometers per second in a vacuum."
+            return reply, spoken
 
-        if fallback_lang in ["te", "hi"]:
-            return fallback_lang
+        # Gravity
+        if ("what is gravity" in q or "గురుత్వాకర్షణ" in q or "गुरुत्वाकर्षण" in q) and not any(k in q for k in ["crop", "price"]):
+            reply = "**Gravity** is the universal fundamental physical force of attraction that pulls objects with mass toward each other, keeping planets in orbit around the Sun and holding atmosphere and objects to the Earth."
+            spoken = "Gravity is the fundamental attractive force that draws objects with mass toward one another."
+            return reply, spoken
 
-        return "en"
+        # Famous personalities
+        if "mahatma gandhi" in q or "గాంధీజీ" in q or "महात्मा गांधी" in q:
+            reply = "**Mahatma Gandhi (Mohandas Karamchand Gandhi, 1869–1948)** was the revered father of the Indian nation who pioneered the philosophy of *Satyagraha* (nonviolent civil resistance), leading India to independence in 1947."
+            spoken = "Mahatma Gandhi was the leader of India's independence movement who championed nonviolent resistance and truth."
+            return reply, spoken
+
+        if "abdul kalam" in q or "కలాం" in q or "अब्दुल कलाम" in q:
+            reply = "**Dr. A.P.J. Abdul Kalam (1931–2015)** was an eminent Indian aerospace scientist and the 11th President of India (2002–2007), fondly remembered as the *'People's President'* and the *'Missile Man of India'*."
+            spoken = "Dr. APJ Abdul Kalam was a renowned aerospace scientist and the beloved 11th President of India."
+            return reply, spoken
+
+        return None
 
     @classmethod
-    def normalize_agricultural_speech(cls, text: str) -> str:
-        """Normalizes common ASR speech-to-text anomalies, phonetic terms, and spoken numbers."""
-        if not text:
-            return ""
-
-        s = text
-
-        # Spoken variety number mapping: "three forty one" -> "341"
-        s = re.sub(r'\b(?:three\s+forty\s+one|three\s+four\s+one|3\s+4\s+1|మూడు\s+నలభై\s+ఒకటి|तीन\s+सौ\s+इकतालीस)\b', '341', s, flags=re.IGNORECASE)
-
-        # Common agricultural phonetics
-        phonetic_replacements = [
-            (r'\btrips\b', 'thrips'),
-            (r'\bthrip\b', 'thrips'),
-            (r'\btheja\b', 'teja'),
-            (r'\bbyadagi\b', 'byadgi'),
-            (r'\bbyadigi\b', 'byadgi'),
-            (r'\bbedgi\b', 'byadgi'),
-            (r'\bmirchi\b', 'chilli'),
-            (r'\bmirapa\b', 'chilli'),
-            (r'\btamatar\b', 'tomato'),
-            (r'\bkapas\b', 'cotton'),
-            (r'\bpatti\b', 'cotton'),
-            (r'\bpatthi\b', 'cotton'),
-            (r'\bdhan\b', 'paddy'),
-            (r'\bchaval\b', 'paddy'),
-            (r'\bvari\b', 'paddy'),
-            (r'\bpyaz\b', 'onion'),
-            (r'\bulli\b', 'onion'),
-            (r'\bullipaya\b', 'onion')
-        ]
-
-        for pattern, replacement in phonetic_replacements:
-            s = re.sub(pattern, replacement, s, flags=re.IGNORECASE)
-
-        return s
-
-    @classmethod
-    def resolve_coreference(cls, query: str, session: ConversationSession, profile: Any = None) -> Dict[str, Any]:
+    def resolve_coreference(
+        cls,
+        query: str,
+        session: ConversationSession,
+        profile: Any = None,
+        device_location: Optional[Dict[str, Any]] = None,
+        farm_location: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Resolves coreference, anaphora, dates, varieties, crops, and locations across dialogue turns."""
         q_lower = query.lower()
         resolved = {
             "crop": None,
             "variety": None,
             "date": "Today" if any(k in q_lower or k in query for k in ["today", "ఈరోజు", "आज"]) else "Yesterday",
-            "location": None
+            "location": None,
+            "location_type": None
         }
 
         # 1. Direct date mentions
@@ -631,10 +700,11 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         else:
             resolved["date"] = session.active_date or "Yesterday"
 
-        # 2. Location extraction
+        # 2. Explicit location extraction (Priority 1: overrides all defaults for this turn)
         for loc in cls.LOCATIONS_VOCAB:
             if loc in q_lower or loc in query:
                 resolved["location"] = loc.capitalize()
+                resolved["location_type"] = "explicit"
                 break
 
         # 3. Crop extraction
@@ -678,18 +748,58 @@ The programmer replied: *"Because they had eggs!"* 😂"""
             if not resolved["location"]:
                 resolved["location"] = session.active_location
 
-        # Check profile default context
+        # Check profile default context for crop
         if not resolved["crop"]:
             if any(k in q_lower or k in query for k in ["my crop", "నా పంట", "मेरी फसल", "పంట", "फसल", "highest price"]):
                 if profile and getattr(profile, "crops", None) and len(profile.crops) > 0:
                     resolved["crop"] = profile.crops[0]
 
-        # Location priority: 1. Explicit mention, 2. GPS Context, 3. Saved Profile Location
+        # 6. Location Resolution Priority:
+        # If not explicitly mentioned in query:
+        # - "here" / "around me" / "current location" -> Device Location (Guntur)
+        # - "farm" / "my farm" / "at my farm" -> Farm Location (Cherla)
+        # - Farming / Weather general queries -> Farm Location (where crops grow), fallback to Device
         if not resolved["location"]:
-            if session.gps_location and session.gps_location.get("district"):
-                resolved["location"] = session.gps_location["district"]
-            elif profile and getattr(profile, "location", None) and profile.location.strip():
-                resolved["location"] = profile.location.strip()
+            is_here_query = any(k in q_lower or k in query for k in [
+                "here", "around me", "near me", "current location", "local",
+                "ఇక్కడ", "నా దగ్గర", "ఈ ప్రాంతంలో", "यहाँ", "मेरे पास", "यहीं"
+            ])
+            is_farm_query = any(k in q_lower or k in query for k in [
+                "farm", "my farm", "at my farm", "in my farm", "field", "my field",
+                "పొలం", "నా పొలం", "తోట", "నా తోట", "చేను", "నా చేను", "ఖేత్", "खेत", "मेरे खेत", "खेत में"
+            ])
+
+            eff_dev = device_location or session.device_location or session.gps_location or (getattr(profile, "device_location", None) if profile else None)
+            eff_farm = farm_location or session.farm_location or (getattr(profile, "farm_location", None) if profile else None) or (getattr(profile, "location", None) if profile else None)
+
+            if is_here_query:
+                if eff_dev:
+                    if isinstance(eff_dev, dict):
+                        resolved["location"] = eff_dev.get("district") or eff_dev.get("city") or eff_dev.get("name")
+                    else:
+                        resolved["location"] = getattr(eff_dev, "district", None) or getattr(eff_dev, "city", None)
+                    resolved["location_type"] = "device"
+                else:
+                    resolved["location_type"] = "needs_device_permission"
+            elif is_farm_query:
+                if eff_farm and str(eff_farm).strip():
+                    resolved["location"] = str(eff_farm).strip()
+                    resolved["location_type"] = "farm"
+                else:
+                    resolved["location_type"] = "needs_farm_location"
+            else:
+                # Default agricultural routing: Farm Location is primary for farming
+                if eff_farm and str(eff_farm).strip():
+                    resolved["location"] = str(eff_farm).strip()
+                    resolved["location_type"] = "farm"
+                elif eff_dev:
+                    if isinstance(eff_dev, dict):
+                        resolved["location"] = eff_dev.get("district") or eff_dev.get("city") or eff_dev.get("name")
+                    else:
+                        resolved["location"] = getattr(eff_dev, "district", None) or getattr(eff_dev, "city", None)
+                    resolved["location_type"] = "device"
+                else:
+                    resolved["location_type"] = "needs_location"
 
         # Update session memory
         if resolved["crop"]:
@@ -703,27 +813,54 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         return resolved
 
     @classmethod
-    def execute(cls, user_msg: str, profile: Any, lang: str, session: ConversationSession, image_base64: Optional[str] = None, location: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def execute(
+        cls,
+        user_msg: str,
+        profile: Any,
+        lang: str,
+        session: ConversationSession,
+        image_base64: Optional[str] = None,
+        location: Optional[Dict[str, Any]] = None,
+        device_location: Optional[Dict[str, Any]] = None,
+        farm_location: Optional[str] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
         """Main agent reasoning step: Intent -> Tool -> Answer."""
         user_msg_clean = user_msg.strip()
         user_msg_norm = cls.normalize_agricultural_speech(user_msg_clean)
         q_lower = user_msg_norm.lower()
 
-        # Automatic Language Detection from User Text/Speech
+        # Automatic Language Detection from User Text/Speech (Telugu default ONLY when uncertain)
         effective_lang = cls.detect_language(user_msg_clean, fallback_lang=lang)
 
-        # Store GPS location in session if supplied
-        if location:
+        # Store locations in session
+        if device_location:
+            session.device_location = device_location
+            session.gps_location = device_location
+        elif location:
+            session.device_location = location
             session.gps_location = location
-            if location.get("district"):
-                session.active_location = location["district"]
+
+        if farm_location:
+            session.farm_location = farm_location
+        elif profile and getattr(profile, "farm_location", None):
+            session.farm_location = profile.farm_location
+        elif profile and getattr(profile, "location", None):
+            session.farm_location = profile.location
 
         # Resolve coreference and entities early
-        entities = cls.resolve_coreference(user_msg_norm, session, profile)
+        entities = cls.resolve_coreference(
+            user_msg_norm,
+            session,
+            profile,
+            device_location=session.device_location,
+            farm_location=session.farm_location
+        )
         crop = entities["crop"]
         variety = entities["variety"]
         date = entities["date"]
         resolved_loc = entities["location"]
+        loc_type = entities.get("location_type")
 
         # -------------------------------------------------------------
         # STEP 1: CROP IMAGE ANALYSIS (Visual tool priority)
@@ -763,7 +900,7 @@ The programmer replied: *"Because they had eggs!"* 😂"""
             }
 
         # -------------------------------------------------------------
-        # STEP 3: GENERAL CONVERSATIONAL CAPABILITIES (Direct answers)
+        # STEP 3: GENERAL CONVERSATIONAL CAPABILITIES (Direct answers, NO forced agriculture)
         # -------------------------------------------------------------
 
         # Math & Arithmetic Evaluation (e.g. "25 + 25", "25% of 800")
@@ -788,6 +925,18 @@ The programmer replied: *"Because they had eggs!"* 😂"""
                 "tool_used": "conversational_assistant",
                 "detected_language": effective_lang,
                 "suggested_actions": ["🌱 Agricultural Guidance", "💰 Market Prices", "🌦️ Weather Forecast"]
+            }
+
+        # General Knowledge, Science, Geography & Person Inquiries
+        gk_res = cls.check_general_knowledge(user_msg_clean, effective_lang)
+        if gk_res:
+            reply_text, spoken_text = gk_res
+            return {
+                "reply": reply_text,
+                "spoken_text": spoken_text,
+                "tool_used": "conversational_assistant",
+                "detected_language": effective_lang,
+                "suggested_actions": ["❓ Ask Another Question", "💰 Check Market Prices", "🌦️ Today's Weather"]
             }
 
         # Document & Message Drafting (e.g. supplier messages, leave letters)
@@ -843,15 +992,19 @@ The programmer replied: *"Because they had eggs!"* 😂"""
             res["detected_language"] = effective_lang
             return res
 
-        # B. Nearby Market Discovery ("Which market is nearby?", "Markets around me")
+        # B. Nearby Market Discovery ("Which market is nearby?", "Markets around me", "Which mandi is near me")
         is_nearby_market_query = any(k in q_lower or k in user_msg_clean for k in [
             "nearby market", "markets nearby", "nearest market", "market near me", "markets around me",
-            "closest mandi", "closest market", "market around", "సమీప మార్కెట్", "దగ్గరి మార్కెట్", "పాస్ కి మండి", "नजदीकी मंडी"
-        ])
+            "closest mandi", "closest market", "market around", "near me", "near my farm", "nearby mandi",
+            "nearby mandis", "mandis near", "mandi near", "సమీప మార్కెట్", "దగ్గరి మార్కెట్", "పాస్ కి మండి", "नजदीकी मंडी"
+        ]) or (
+            any(prox in q_lower for prox in ["near", "nearby", "closest", "around", "సమీప", "దగ్గరి", "नजदीक", "पास"])
+            and any(m_word in q_lower for m_word in ["mandi", "mandis", "market", "markets", "yard", "యార్డ్", "మార్కెట్", "మండి", "मंडी"])
+        )
         if is_nearby_market_query:
             session.active_topic = "market_price"
             target_crop = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else session.active_crop) or "Chilli"
-            res = cls._format_nearby_market_response(target_crop, session, effective_lang)
+            res = cls._format_nearby_market_response(target_crop, session, effective_lang, query=user_msg_clean)
             res["detected_language"] = effective_lang
             return res
 
@@ -906,7 +1059,25 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         # Weather Tool
         if is_weather_query:
             session.active_topic = "weather"
-            loc = resolved_loc or (session.gps_location.get("district") if session.gps_location else None) or (profile.location if profile and getattr(profile, "location", None) else "Guntur")
+            if not resolved_loc and loc_type == "needs_device_permission":
+                if effective_lang == "te":
+                    reply = "మీ ప్రస్తుత ప్రాంత వాతావరణం కోసం, దయచేసి బ్రౌజర్‌లో లొకేషన్ అనుమతించండి లేదా 'డిటెక్ట్ మై లొకేషన్' బటన్ నొక్కండి."
+                    spoken = "ప్రస్తుత ప్రాంత వాతావరణం కోసం బ్రౌజర్‌లో లొకేషన్ అనుమతించండి."
+                elif effective_lang == "hi":
+                    reply = "वर्तमान स्थान के मौसम के लिए, कृपया ब्राउज़र में लोकेशन की अनुमति दें या 'डिटेक्ट लोकेशन' पर क्लिक करें।"
+                    spoken = "वर्तमान स्थान के मौसम के लिए लोकेशन की अनुमति दें।"
+                else:
+                    reply = "To get weather for your current location, please enable browser location permission or click 'Detect My Location'."
+                    spoken = "Please enable location permission to get local weather forecast."
+                return {
+                    "reply": reply,
+                    "spoken_text": spoken,
+                    "tool_used": "location_prompt",
+                    "detected_language": effective_lang,
+                    "suggested_actions": ["📍 Detect My Location", "🌦️ Cherla Weather", "🌦️ Guntur Weather"]
+                }
+
+            loc = resolved_loc or (effective_lang == "te" and "మీ పొలం") or (effective_lang == "hi" and "आपका खेत") or "Farm Location"
             weather_data = AgriculturalTools.weather(loc)
             res = cls._format_weather_response(weather_data, loc, effective_lang, query=user_msg_norm)
             res["detected_language"] = effective_lang
@@ -1133,43 +1304,80 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         }
 
     @classmethod
-    def _format_nearby_market_response(cls, crop: str, session: ConversationSession, lang: str) -> Dict[str, Any]:
-        gps = session.gps_location
-        if gps and gps.get("latitude") and gps.get("longitude"):
-            lat = gps["latitude"]
-            lon = gps["longitude"]
-            nearby = AgriculturalTools.nearby_mandis(lat, lon, crop=crop, max_km=150)
+    def _format_nearby_market_response(cls, crop: str, session: ConversationSession, lang: str, query: str = "") -> Dict[str, Any]:
+        q_lower = query.lower()
+        is_farm_nearby = any(k in q_lower or k in query for k in ["farm", "my farm", "పొలం", "తోట", "చేను", "ఖేత్", "खेत"])
+
+        lat, lon = None, None
+        import market_service
+        if is_farm_nearby and session.farm_location:
+            coords = market_service.get_coordinates_for_location(session.farm_location)
+            if coords:
+                lat, lon = coords[0], coords[1]
+        elif session.device_location and session.device_location.get("latitude") and session.device_location.get("longitude"):
+            lat = session.device_location["latitude"]
+            lon = session.device_location["longitude"]
+        elif session.gps_location and session.gps_location.get("latitude") and session.gps_location.get("longitude"):
+            lat = session.gps_location["latitude"]
+            lon = session.gps_location["longitude"]
+        elif session.farm_location:
+            coords = market_service.get_coordinates_for_location(session.farm_location)
+            if coords:
+                lat, lon = coords[0], coords[1]
+
+        if lat is not None and lon is not None:
+            nearby = AgriculturalTools.nearby_mandis(lat, lon, crop=crop, max_km=250)
         else:
             nearby = []
 
         if not nearby:
-            if lang == "te":
-                reply = "మీ సమీప మార్కెట్ యార్డులు మరియు రోడ్డు దూరాలను చూపించడానికి, దయచేసి బ్రౌజర్‌లో లొకేషన్ అనుమతించండి లేదా మీ జిల్లా/మండలం పేరును తెలియజేయండి."
-                spoken = "సమీప మార్కెట్లను తెలుసుకోవడానికి మీ లొకేషన్ అనుమతించండి."
-            elif lang == "hi":
-                reply = "आपके नजदीकी मंडी भाव और दूरी जानने के लिए, कृपया लोकेशन अनुमति दें या अपने जिले/तहसील का नाम बताएं।"
-                spoken = "नजदीकी मंडियों के लिए कृपया लोकेशन की अनुमति दें।"
+            if is_farm_nearby:
+                if lang == "te":
+                    reply = "మీ పొలం వద్ద నుండి సమీప మార్కెట్ యార్డులను లెక్కించడానికి, దయచేసి మీ ప్రొఫైల్‌లో 'పొలం లొకేషన్' (Farm Location) ను ఎంచుకోండి (ఉదా: చెర్ల, భద్రాద్రి కొత్తగూడెం)."
+                    spoken = "మీ పొలానికి సమీప మార్కెట్లను లెక్కించడానికి ప్రొఫైల్‌లో పొలం లొకేషన్ ఎంచుకోండి."
+                elif lang == "hi":
+                    reply = "अपने खेत से नजदीकी मंडी भाव और दूरी जानने के लिए, कृपया प्रोफाइल में 'खेत का स्थान' चुनें (उदा: चेर्ला, भद्राद्रि कोत्तागूडेम)।"
+                    spoken = "खेत से नजदीकी मंडियों के लिए कृपया खेत का स्थान चुनें।"
+                else:
+                    reply = "To calculate distances from your farm, please set your Farm Location in your profile (e.g., Cherla, Bhadradri Kothagudem)."
+                    spoken = "Please set your Farm Location in your profile to see mandis near your farm."
+                actions = ["📍 Choose Farm Location", "🌶️ Khammam Mandi", "🌶️ Warangal Mandi"]
             else:
-                reply = "To show nearby APMC mandis with exact road distances, please allow browser location or tell me your district/mandal."
-                spoken = "Please enable GPS location to see nearby mandis with exact distances."
+                if lang == "te":
+                    reply = "మీ ప్రస్తుత ప్రాంతం నుండి సమీప మార్కెట్ యార్డులు మరియు రోడ్డు దూరాలను చూపించడానికి, దయచేసి బ్రౌజర్‌లో లొకేషన్ అనుమతించండి లేదా 'డిటెక్ట్ మై లొకేషన్' ఎంచుకోండి."
+                    spoken = "సమీప మార్కెట్లను తెలుసుకోవడానికి మీ లొకేషన్ అనుమతించండి."
+                elif lang == "hi":
+                    reply = "आपके नजदीकी मंडी भाव और दूरी जानने के लिए, कृपया लोकेशन अनुमति दें या 'डिटेक्ट लोकेशन' पर क्लिक करें।"
+                    spoken = "नजदीकी मंडियों के लिए कृपया लोकेशन की अनुमति दें।"
+                else:
+                    reply = "To show nearby APMC mandis with exact road distances from your current location, please allow browser location or click 'Detect My Location'."
+                    spoken = "Please enable GPS location to see nearby mandis with exact distances."
+                actions = ["📍 Detect My Location", "🌶️ Guntur Mandi", "🌶️ Khammam Mandi"]
+
             return {
                 "reply": reply,
                 "spoken_text": spoken,
                 "tool_used": "nearby_mandis",
-                "suggested_actions": ["📍 Share Location", "🌶️ Guntur Mandi", "🌶️ Khammam Mandi"]
+                "suggested_actions": actions
             }
 
         top = nearby[0]
         rows = []
         for m in nearby[:5]:
             dist = f"{m['distance_km']} km"
-            modal = f"₹{m['modal_price']:,}"
-            rows.append(f"| **{m['market']}** ({m['district']}) | {dist} | {modal} | ₹{m['min_price']:,} - ₹{m['max_price']:,} |")
+            modal = f"₹{m.get('modal_price', 0):,}"
+            min_p = m.get('min_price', m.get('modal_price', 0))
+            max_p = m.get('max_price', m.get('modal_price', 0))
+            rows.append(f"| **{m['market']}** ({m['district']}) | {dist} | {modal} | ₹{min_p:,} - ₹{max_p:,} |")
 
         table = "\n".join(rows)
 
+        origin_label = "పొలం" if is_farm_nearby else "ప్రస్తుత ప్రాంతం"
+        origin_label_hi = "खेत" if is_farm_nearby else "वर्तमान स्थान"
+        origin_label_en = "farm" if is_farm_nearby else "location"
+
         if lang == "te":
-            reply = f"""### 📍 మీ సమీప APMC మార్కెట్ యార్డులు ({crop})
+            reply = f"""### 📍 మీ {origin_label} సమీప APMC మార్కెట్ యార్డులు ({crop})
 
 | మార్కెట్ యార్డ్ | దూరం | మోడల్ ధర / క్వింటాల్ | కనిష్ట - గరిష్ట |
 | :--- | :--- | :--- | :--- |
@@ -1178,7 +1386,7 @@ The programmer replied: *"Because they had eggs!"* 😂"""
 💡 **సిఫార్సు:** అత్యంత సమీపంలో ఉన్న మార్కెట్ **{top['market']}** ({top['distance_km']} km). మోడల్ ధర **₹{top['modal_price']:,} / క్వింటాల్**."""
             spoken = f"మీకు సమీపంలోని మార్కెట్ {top['market']}, ఇది {top['distance_km']} కిలోమీటర్ల దూరంలో ఉంది. మోడల్ ధర క్వింటాల్‌కు ₹{top['modal_price']:,}."
         elif lang == "hi":
-            reply = f"""### 📍 आपके नजदीकी APMC मंडी भाव ({crop})
+            reply = f"""### 📍 आपके {origin_label_hi} के नजदीकी APMC मंडी भाव ({crop})
 
 | मंडी यार्ड | दूरी | मोडल भाव / क्विंटल | न्यूनतम - उच्चतम |
 | :--- | :--- | :--- | :--- |
@@ -1187,13 +1395,13 @@ The programmer replied: *"Because they had eggs!"* 😂"""
 💡 **सिफारिश:** सबसे नजदीकी मंडी **{top['market']}** ({top['distance_km']} किमी) है। मोडल भाव **₹{top['modal_price']:,} / क्विंटल** है।"""
             spoken = f"आपके सबसे करीब {top['market']} मंडी है, जो {top['distance_km']} किलोमीटर की दूरी पर है। मोडल भाव ₹{top['modal_price']:,} है।"
         else:
-            reply = f"""### 📍 Nearby APMC Mandis for {crop}
+            reply = f"""### 📍 Nearby APMC Mandis for {crop} (from your {origin_label_en})
 
 | Mandi Yard | Distance | Modal Price / Qtl | Min - Max Range |
 | :--- | :--- | :--- | :--- |
 {table}
 
-💡 **Recommendation:** The closest mandi to your location is **{top['market']}** ({top['distance_km']} km) with a modal benchmark of **₹{top['modal_price']:,} / quintal**."""
+💡 **Recommendation:** The closest mandi is **{top['market']}** ({top['distance_km']} km) with a modal benchmark of **₹{top['modal_price']:,} / quintal**."""
             spoken = f"The closest market is {top['market']} at {top['distance_km']} kilometers away, with a modal price of ₹{top['modal_price']:,} per quintal."
 
         return {
@@ -1370,19 +1578,21 @@ Here are verified APMC rates:
         crop_hi = cls.CROP_HI_MAP.get(crop, crop)
 
         farmer_name = profile.name.strip() if profile and getattr(profile, "name", None) else ""
-        farmer_loc = location or (getattr(profile, "location", None) if profile else None) or "Guntur"
+        farmer_loc = location or (getattr(profile, "farm_location", None) if profile else None) or (getattr(profile, "location", None) if profile else None) or ""
         farmer_size = getattr(profile, "farm_size", "") if profile else ""
 
         salutation_te = f"నమస్కారం **{farmer_name} గారు**! " if farmer_name else ""
         salutation_hi = f"नमस्ते **{farmer_name} जी**! " if farmer_name else ""
         salutation_en = f"Hello **{farmer_name}**! " if farmer_name else ""
 
+        loc_text_te = f"మీ ప్రాంతం **{farmer_loc}** ఆధారంగా:\n\n" if farmer_loc else ""
+        loc_text_hi = f"आपके **{farmer_loc}** स्थित खेत के अनुसार:\n\n" if farmer_loc else ""
+        loc_text_en = f"Based on your farm in **{farmer_loc}**:\n\n" if farmer_loc else ""
+
         if lang == "te":
             reply = f"""### 🌾 అత్యధిక ధర గల మార్కెట్ ({crop_te}{var_text} - {date})
 
-{salutation_te}మీ ప్రాంతం **{farmer_loc}** ఆధారంగా:
-
-🏆 **అత్యధిక ధర గల మార్కెట్:**
+{salutation_te}{loc_text_te}🏆 **అత్యధిక ధర గల మార్కెట్:**
 - **{top['market']}** ({top['district']}, {top['state']})
 - **మోడల్ ధర:** **₹{top['modal_price']:,} / క్వింటాల్** (గరిష్ట ధర: ₹{top['max_price']:,})
 - **రోజువారీ రాబడులు:** {top['arrivals']} • ట్రెండ్: 📈 పెరుగుదల
@@ -1392,9 +1602,7 @@ Here are verified APMC rates:
         elif lang == "hi":
             reply = f"""### 🌾 उच्चतम भाव देने वाली मंडी ({crop_hi}{var_text} - {date})
 
-{salutation_hi}आपके **{farmer_loc}** स्थित खेत के अनुसार:
-
-🏆 **उच्चतम भाव देने वाली मंडी:**
+{salutation_hi}{loc_text_hi}🏆 **उच्चतम भाव देने वाली मंडी:**
 - **{top['market']}** ({top['district']}, {top['state']})
 - **मोडल भाव:** **₹{top['modal_price']:,} / क्विंटल** (अधिकतम: ₹{top['max_price']:,})
 - **दैनिक आवक:** {top['arrivals']} • रुझान: 📈 बढ़ोतरी
@@ -1404,9 +1612,7 @@ Here are verified APMC rates:
         else:
             reply = f"""### 🌾 Highest Price Market for **{crop}{var_text}** ({date})
 
-{salutation_en}Based on your farm in **{farmer_loc}**:
-
-🏆 **Highest Price Market:**
+{salutation_en}{loc_text_en}🏆 **Highest Price Market:**
 - **{top['market']}** ({top['district']}, {top['state']})
 - **Modal Rate:** **₹{top['modal_price']:,} / quintal** (High: ₹{top['max_price']:,})
 - **Daily Arrivals:** {top['arrivals']} • Trend: 📈 {top['trend'].capitalize()}
@@ -1668,7 +1874,18 @@ class AIAgent:
         return ConversationalAIEngine.detect_language(text, fallback_lang)
 
     @classmethod
-    def process(cls, message: str, conversation_id: Optional[str] = None, image_base64: Optional[str] = None, profile: Optional[Any] = None, lang: str = "en", location: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def process(
+        cls,
+        message: str,
+        conversation_id: Optional[str] = None,
+        image_base64: Optional[str] = None,
+        profile: Optional[Any] = None,
+        lang: str = "en",
+        location: Optional[Dict[str, Any]] = None,
+        device_location: Optional[Dict[str, Any]] = None,
+        farm_location: Optional[str] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
         session = session_repo.get_or_create(conversation_id)
         session.add_message(role="user", content=message)
 
@@ -1679,7 +1896,10 @@ class AIAgent:
             lang=lang,
             session=session,
             image_base64=image_base64,
-            location=location
+            location=location,
+            device_location=device_location,
+            farm_location=farm_location,
+            **kwargs
         )
 
         # Record assistant reply
@@ -1688,10 +1908,31 @@ class AIAgent:
         return response
 
     @classmethod
-    async def process_stream(cls, message: str, conversation_id: Optional[str] = None, image_base64: Optional[str] = None, profile: Optional[Any] = None, lang: str = "en", location: Optional[Dict[str, Any]] = None):
+    async def process_stream(
+        cls,
+        message: str,
+        conversation_id: Optional[str] = None,
+        image_base64: Optional[str] = None,
+        profile: Optional[Any] = None,
+        lang: str = "en",
+        location: Optional[Dict[str, Any]] = None,
+        device_location: Optional[Dict[str, Any]] = None,
+        farm_location: Optional[str] = None,
+        **kwargs
+    ):
         """Asynchronously streams response tokens/chunks formatted for SSE."""
         import asyncio
-        res = cls.process(message=message, conversation_id=conversation_id, image_base64=image_base64, profile=profile, lang=lang, location=location)
+        res = cls.process(
+            message=message,
+            conversation_id=conversation_id,
+            image_base64=image_base64,
+            profile=profile,
+            lang=lang,
+            location=location,
+            device_location=device_location,
+            farm_location=farm_location,
+            **kwargs
+        )
         full_reply = res["reply"]
 
         # Stream chunks to show thinking / generation progress
