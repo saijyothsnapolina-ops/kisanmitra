@@ -932,10 +932,16 @@ def get_local_ip() -> str:
 TUNNEL_INFO_FILE = os.path.join(DATA_DIR, "tunnel_info.json")
 
 def get_public_url() -> str:
-    """Retrieve public HTTPS tunnel URL if available."""
+    """Retrieve public HTTPS tunnel or Vercel production URL if available."""
     env_url = os.environ.get("PUBLIC_URL") or os.environ.get("TUNNEL_URL")
     if env_url:
         return env_url.strip()
+
+    # Automatically detect Vercel production domain
+    vercel_url = os.environ.get("VERCEL_PROJECT_PRODUCTION_URL") or os.environ.get("VERCEL_URL")
+    if vercel_url:
+        v = vercel_url.strip()
+        return v if v.startswith("http") else f"https://{v}"
     if os.path.exists(TUNNEL_INFO_FILE):
         try:
             with open(TUNNEL_INFO_FILE, "r", encoding="utf-8") as f:
