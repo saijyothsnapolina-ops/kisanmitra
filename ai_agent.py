@@ -731,7 +731,33 @@ The programmer replied: *"Because they had eggs!"* 😂"""
                     resolved["crop"] = "Chilli"
                     break
 
-        # 5. Coreference propagation (resolve "it", "yesterday", "highest", "which market", "my crop")
+        # 5. Coreference & Profile Context Resolution
+        prof_crop = None
+        prof_variety = None
+        if profile:
+            if getattr(profile, "crops", None) and len(profile.crops) > 0 and str(profile.crops[0]).strip():
+                prof_crop = str(profile.crops[0]).strip()
+            elif getattr(profile, "main_crop", None) and str(profile.main_crop).strip():
+                prof_crop = str(profile.main_crop).strip()
+
+            if getattr(profile, "crop_variety", None) and str(profile.crop_variety).strip():
+                prof_variety = str(profile.crop_variety).strip()
+            elif getattr(profile, "crop_varieties", None) and len(profile.crop_varieties) > 0 and str(profile.crop_varieties[0]).strip():
+                prof_variety = str(profile.crop_varieties[0]).strip()
+
+            if prof_variety and prof_variety.lower() in ["all", "none", "all varieties", "all chilli", ""]:
+                prof_variety = None
+
+        # Check if user explicitly asked for "my crop" / "నా పంట" / "मेरी फसल"
+        is_my_crop_query = any(k in q_lower or k in query for k in [
+            "my crop", "నా పంట", "मेरी फसल", "పంట", "ఫసల్", "mera crop", "naa panta"
+        ])
+        is_highest_query = any(k in q_lower or k in query for k in ["highest", "best market", "ఎక్కడ ఎక్కువ", "అత్యధిక", "top price"])
+        if is_my_crop_query and prof_crop:
+            resolved["crop"] = prof_crop
+            if not is_highest_query and prof_variety and not resolved["variety"]:
+                resolved["variety"] = prof_variety
+
         anaphoric_triggers = [
             "what about", "and yesterday", "and today", "yesterday?", "today?",
             "where is it", "it getting", "highest price", "highest?", "which market",
@@ -740,19 +766,34 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         ]
         is_followup = any(trig in q_lower or trig in query for trig in anaphoric_triggers)
 
-        if is_followup or (not resolved["crop"] and session.active_crop):
-            if not resolved["crop"]:
-                resolved["crop"] = session.active_crop
-            if not resolved["variety"]:
-                resolved["variety"] = session.active_variety
-            if not resolved["location"]:
-                resolved["location"] = session.active_location
-
-        # Check profile default context for crop
+        # Context propagation hierarchy:
+        # Priority 1: Explicit crop in query (already in resolved["crop"])
+        # Priority 2: Active session crop from previous turn
+        # Priority 3: Saved Farmer Profile crop (default farming context)
         if not resolved["crop"]:
-            if any(k in q_lower or k in query for k in ["my crop", "నా పంట", "मेरी फसल", "పంట", "फसल", "highest price"]):
-                if profile and getattr(profile, "crops", None) and len(profile.crops) > 0:
-                    resolved["crop"] = profile.crops[0]
+            if is_followup and session.active_crop:
+                resolved["crop"] = session.active_crop
+                if not resolved["variety"]:
+                    resolved["variety"] = session.active_variety
+            elif session.active_crop:
+                resolved["crop"] = session.active_crop
+                if not resolved["variety"]:
+                    resolved["variety"] = session.active_variety
+            elif prof_crop:
+                resolved["crop"] = prof_crop
+                if prof_variety and not resolved["variety"]:
+                    resolved["variety"] = prof_variety
+
+        # Variety resolution:
+        # If crop matches profile crop and variety is not explicitly specified, load profile variety
+        if resolved["crop"] and prof_crop and resolved["crop"].lower() == prof_crop.lower():
+            if not resolved["variety"] and prof_variety:
+                if not (is_my_crop_query and is_highest_query):
+                    resolved["variety"] = prof_variety
+
+        # Propagate location from active session if followup
+        if is_followup and not resolved["location"] and session.active_location:
+            resolved["location"] = session.active_location
 
         # 6. Location Resolution Priority:
         # If not explicitly mentioned in query:
@@ -803,9 +844,15 @@ The programmer replied: *"Because they had eggs!"* 😂"""
 
         # Update session memory
         if resolved["crop"]:
+            # When switching to a different crop, reset variety unless specified for the new crop
+            if session.active_crop and session.active_crop.lower() != resolved["crop"].lower():
+                session.active_variety = resolved["variety"]
+            elif resolved["variety"]:
+                session.active_variety = resolved["variety"]
             session.active_crop = resolved["crop"]
-        if resolved["variety"]:
+        elif resolved["variety"]:
             session.active_variety = resolved["variety"]
+
         if resolved["location"]:
             session.active_location = resolved["location"]
         session.active_date = resolved["date"]
@@ -1003,7 +1050,7 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         )
         if is_nearby_market_query:
             session.active_topic = "market_price"
-            target_crop = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else session.active_crop) or "Chilli"
+            target_crop = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else session.active_crop) or None
             res = cls._format_nearby_market_response(target_crop, session, effective_lang, query=user_msg_clean)
             res["detected_language"] = effective_lang
             return res
@@ -1085,7 +1132,33 @@ The programmer replied: *"Because they had eggs!"* 😂"""
 
         # Crop Health & Pest Advisory Tool
         if is_crop_health_query:
-            target_crop = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else "Chilli")
+            target_crop = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else session.active_crop)
+            if not target_crop:
+                if effective_lang == "te":
+                    return {
+                        "reply": "మీరు ఏ పంట గురించి అడుగుతున్నారు? (ఉదా: మిర్చి, టమోటా, పత్తి, వరి). పంట పేరు చెబితే సరైన సస్యరక్షణ సలహా ఇవ్వగలను.",
+                        "spoken_text": "మీరు ఏ పంట గురించి అడుగుతున్నారో తెలిపితే సరైన సస్యరక్షణ సలహా ఇవ్వగలను.",
+                        "tool_used": "clarification",
+                        "detected_language": "te",
+                        "suggested_actions": ["🌶️ మిర్చి సస్యరక్షణ", "🍅 టమోటా సస్యరక్షణ", "☁️ పత్తి సస్యరక్షణ"]
+                    }
+                elif effective_lang == "hi":
+                    return {
+                        "reply": "आप किस फसल के बारे में पूछ रहे हैं? (जैसे: मिर्च, टमाटर, कपास, धान)। कृपया फसल का नाम बताएं ताकि मैं सही उपचार बता सकूं।",
+                        "spoken_text": "कृपया फसल का नाम बताएं ताकि मैं सही उपचार बता सकूं।",
+                        "tool_used": "clarification",
+                        "detected_language": "hi",
+                        "suggested_actions": ["🌶️ मिर्च सुरक्षा", "🍅 टमाटर सुरक्षा", "☁️ कपास सुरक्षा"]
+                    }
+                else:
+                    return {
+                        "reply": "Which crop are you asking about? (e.g., Chilli, Tomato, Cotton, Paddy). Please specify your crop so I can provide the right crop protection advisory.",
+                        "spoken_text": "Which crop are you asking about?",
+                        "tool_used": "clarification",
+                        "detected_language": "en",
+                        "suggested_actions": ["🌶️ Chilli Protection", "🍅 Tomato Protection", "☁️ Cotton Protection"]
+                    }
+
             session.active_crop = target_crop
             session.active_topic = "crop_health"
             res = cls._format_crop_health_response(target_crop, user_msg_clean, effective_lang, profile)
@@ -1376,8 +1449,12 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         origin_label_hi = "खेत" if is_farm_nearby else "वर्तमान स्थान"
         origin_label_en = "farm" if is_farm_nearby else "location"
 
+        crop_te = f" ({cls.CROP_TE_MAP.get(crop, crop)})" if crop else ""
+        crop_hi = f" ({cls.CROP_HI_MAP.get(crop, crop)})" if crop else ""
+        crop_en = f" for {crop}" if crop else ""
+
         if lang == "te":
-            reply = f"""### 📍 మీ {origin_label} సమీప APMC మార్కెట్ యార్డులు ({crop})
+            reply = f"""### 📍 మీ {origin_label} సమీప APMC మార్కెట్ యార్డులు{crop_te}
 
 | మార్కెట్ యార్డ్ | దూరం | మోడల్ ధర / క్వింటాల్ | కనిష్ట - గరిష్ట |
 | :--- | :--- | :--- | :--- |
@@ -1386,7 +1463,7 @@ The programmer replied: *"Because they had eggs!"* 😂"""
 💡 **సిఫార్సు:** అత్యంత సమీపంలో ఉన్న మార్కెట్ **{top['market']}** ({top['distance_km']} km). మోడల్ ధర **₹{top['modal_price']:,} / క్వింటాల్**."""
             spoken = f"మీకు సమీపంలోని మార్కెట్ {top['market']}, ఇది {top['distance_km']} కిలోమీటర్ల దూరంలో ఉంది. మోడల్ ధర క్వింటాల్‌కు ₹{top['modal_price']:,}."
         elif lang == "hi":
-            reply = f"""### 📍 आपके {origin_label_hi} के नजदीकी APMC मंडी भाव ({crop})
+            reply = f"""### 📍 आपके {origin_label_hi} के नजदीकी APMC मंडी भाव{crop_hi}
 
 | मंडी यार्ड | दूरी | मोडल भाव / क्विंटल | न्यूनतम - उच्चतम |
 | :--- | :--- | :--- | :--- |
@@ -1395,7 +1472,7 @@ The programmer replied: *"Because they had eggs!"* 😂"""
 💡 **सिफारिश:** सबसे नजदीकी मंडी **{top['market']}** ({top['distance_km']} किमी) है। मोडल भाव **₹{top['modal_price']:,} / क्विंटल** है।"""
             spoken = f"आपके सबसे करीब {top['market']} मंडी है, जो {top['distance_km']} किलोमीटर की दूरी पर है। मोडल भाव ₹{top['modal_price']:,} है।"
         else:
-            reply = f"""### 📍 Nearby APMC Mandis for {crop} (from your {origin_label_en})
+            reply = f"""### 📍 Nearby APMC Mandis{crop_en} (from your {origin_label_en})
 
 | Mandi Yard | Distance | Modal Price / Qtl | Min - Max Range |
 | :--- | :--- | :--- | :--- |

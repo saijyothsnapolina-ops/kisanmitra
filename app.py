@@ -714,10 +714,29 @@ def query_market_data(
     # Filter by location if specified
     if location and location.strip().lower() not in ["all", "all markets", ""]:
         loc_lower = location.strip().lower()
-        results = [
+        direct_matches = [
             m for m in results 
-            if loc_lower in m["market"].lower() or loc_lower in m["district"].lower() or loc_lower in m["state"].lower()
+            if loc_lower in m["market"].lower() or loc_lower in m["district"].lower() or loc_lower in m["state"].lower() or
+               m["market"].lower() in loc_lower or m["district"].lower() in loc_lower
         ]
+        if direct_matches:
+            results = direct_matches
+        else:
+            # Check village/mandal mapped to district, state, or nearest mandi
+            from market_service import search_locations
+            loc_matches = search_locations(loc_lower, limit=1)
+            if loc_matches:
+                top_m = loc_matches[0]
+                dist = (top_m.get("district") or "").lower()
+                st = (top_m.get("state") or "").lower()
+                nm = (top_m.get("nearest_market") or "").lower()
+                geo_matches = [
+                    m for m in results 
+                    if (nm and nm in m["market"].lower()) or (dist and dist in m["district"].lower()) or (st and st in m["state"].lower())
+                ]
+                if geo_matches:
+                    results = geo_matches
+
 
     # Deterministic sorting: Modal Price DESCENDING, secondary sort by Market name ASCENDING
     sorted_results = sorted(results, key=lambda x: (-x["modal_price"], x["market"]))
@@ -1000,15 +1019,29 @@ class ChatRequest(BaseModel):
     device_location: Optional[LocationContext] = None
     farm_location: Optional[str] = None
 
-@app.post("/api/chat")
-def process_chat(req: ChatRequest):
-    profile = req.profile or current_profile or load_profile()
-    if req.farm_location and not profile.farm_location:
-        profile.farm_location = req.farm_location
+def resolve_chat_profile(req_profile: Optional[FarmerProfile], req_farm_loc: Optional[str]) -> FarmerProfile:
+    """Seamlessly preserve farmer's saved profile crops and location across chat turns."""
+    if req_profile and (req_profile.crops or req_profile.main_crop):
+        profile = req_profile.model_copy()
+    elif current_profile and (current_profile.crops or current_profile.main_crop):
+        profile = current_profile.model_copy()
+    elif req_profile:
+        profile = req_profile.model_copy()
+    else:
+        profile = current_profile or load_profile()
+
+    if req_farm_loc and not profile.farm_location:
+        profile.farm_location = req_farm_loc
     if profile.farm_location and not profile.location:
         profile.location = profile.farm_location
     elif profile.location and not profile.farm_location:
         profile.farm_location = profile.location
+
+    return profile
+
+@app.post("/api/chat")
+def process_chat(req: ChatRequest):
+    profile = resolve_chat_profile(req.profile, req.farm_location)
 
     device_loc = req.device_location or req.location
     device_loc_dict = device_loc.model_dump() if device_loc else (profile.device_location.model_dump() if getattr(profile, "device_location", None) else None)
@@ -1027,13 +1060,7 @@ def process_chat(req: ChatRequest):
 
 @app.post("/api/chat/stream")
 async def process_chat_stream(req: ChatRequest):
-    profile = req.profile or current_profile or load_profile()
-    if req.farm_location and not profile.farm_location:
-        profile.farm_location = req.farm_location
-    if profile.farm_location and not profile.location:
-        profile.location = profile.farm_location
-    elif profile.location and not profile.farm_location:
-        profile.farm_location = profile.location
+    profile = resolve_chat_profile(req.profile, req.farm_location)
 
     device_loc = req.device_location or req.location
     device_loc_dict = device_loc.model_dump() if device_loc else (profile.device_location.model_dump() if getattr(profile, "device_location", None) else None)

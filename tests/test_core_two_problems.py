@@ -258,9 +258,110 @@ class TestCoreTwoProblems(unittest.TestCase):
         self.assertTrue(len(spoken) > 0)
         self.assertNotIn("|", spoken)
         self.assertNotIn("###", spoken)
-        # Sentence count is 1-3
         sentences = [s for s in spoken.split(".") if s.strip()]
         self.assertTrue(1 <= len(sentences) <= 3)
 
+    # ==========================================================================
+    # 7. Saved Profile Crop Default Context, Turn Override, & Empty Profile
+    # ==========================================================================
+
+    def test_saved_profile_crop_as_default_context(self):
+        """
+        If farmer has selected a crop in Profile (Main Crop = Chilli, Variety = 341, Farm Location = Cherla),
+        then asking 'Today price entha?' must naturally resolve to Chilli 341 for Today.
+        """
+        # Save profile
+        self.client.post("/api/profile", json={
+            "name": "Ramesh",
+            "farm_location": "Cherla, Bhadradri Kothagudem, Telangana",
+            "crops": ["Chilli"],
+            "crop_variety": "341",
+            "farm_size": "3 Acres"
+        })
+
+        res = self.client.post("/api/chat", json={
+            "message": "Today price entha?",
+            "conversation_id": "test-prof-crop-1"
+        }).json()
+
+        self.assertEqual(res["tool_used"], "market_variety_rates")
+        self.assertEqual(res.get("context_applied", {}).get("crop"), "Chilli")
+        self.assertEqual(res.get("context_applied", {}).get("variety"), "341")
+        self.assertEqual(res.get("context_applied", {}).get("date"), "Today")
+        self.assertIn("341", res["reply"])
+
+    def test_turn_override_and_preservation_sequence(self):
+        """
+        Validates:
+        Turn 1: 'Today price entha?' with Profile (Chilli, 341) -> Chilli 341 Today
+        Turn 2: 'What is tomato price today?' -> Tomato explicitly overrides saved Chilli, variety resets
+        Turn 3: 'What about yesterday?' -> Tomato preserved for Yesterday
+        """
+        conv_id = "test-override-seq"
+        self.client.post("/api/profile", json={
+            "name": "Ramesh",
+            "farm_location": "Cherla, Bhadradri Kothagudem, Telangana",
+            "crops": ["Chilli"],
+            "crop_variety": "341",
+            "farm_size": "3 Acres"
+        })
+
+        # Turn 1
+        res1 = self.client.post("/api/chat", json={
+            "message": "Today price entha?",
+            "conversation_id": conv_id
+        }).json()
+        self.assertEqual(res1["tool_used"], "market_variety_rates")
+        self.assertEqual(res1.get("context_applied", {}).get("crop"), "Chilli")
+        self.assertEqual(res1.get("context_applied", {}).get("variety"), "341")
+        self.assertEqual(res1.get("context_applied", {}).get("date"), "Today")
+
+        # Turn 2: Tomato overrides Chilli
+        res2 = self.client.post("/api/chat", json={
+            "message": "What is tomato price today?",
+            "conversation_id": conv_id,
+            "lang": "en"
+        }).json()
+        self.assertEqual(res2["tool_used"], "market_rates")
+        self.assertEqual(res2.get("context_applied", {}).get("crop"), "Tomato")
+        self.assertEqual(res2.get("context_applied", {}).get("variety"), "All")
+        self.assertEqual(res2.get("context_applied", {}).get("date"), "Today")
+
+        # Turn 3: What about yesterday? (preserves Tomato context)
+        res3 = self.client.post("/api/chat", json={
+            "message": "What about yesterday?",
+            "conversation_id": conv_id,
+            "lang": "en"
+        }).json()
+        self.assertEqual(res3["tool_used"], "market_rates")
+        self.assertEqual(res3.get("context_applied", {}).get("crop"), "Tomato")
+        self.assertEqual(res3.get("context_applied", {}).get("variety"), "All")
+        self.assertEqual(res3.get("context_applied", {}).get("date"), "Yesterday")
+
+    def test_empty_profile_asks_clarification(self):
+        """
+        New user with an empty Profile must NOT default to Tomato or Chilli.
+        AI agent must ask for clarification on which crop to check.
+        """
+        self.client.post("/api/profile/reset")
+
+        res = self.client.post("/api/chat", json={
+            "message": "Today price entha?",
+            "conversation_id": "test-empty-prof",
+            "profile": {
+                "name": "",
+                "farm_location": "",
+                "crops": [],
+                "crop_variety": "",
+                "farm_size": "",
+                "completed": False
+            }
+        }).json()
+
+        self.assertEqual(res["tool_used"], "clarification")
+        self.assertIn("మీరు ఏ పంట ధర గురించి తెలుసుకోవాలనుకుంటున్నారు?", res["reply"])
+        self.assertNotIn("Chilli", res.get("context_applied", {}).get("crop", ""))
+
 if __name__ == "__main__":
     unittest.main()
+
