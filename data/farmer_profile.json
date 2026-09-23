@@ -1,15 +1,13 @@
 {
-  "name": "mahesh",
-  "farm_location": "Cherla, Bhadradri Kothagudem, Telangana",
+  "name": "",
+  "farm_location": "",
   "farm_location_details": null,
-  "location": "Cherla, Bhadradri Kothagudem, Telangana",
+  "location": "",
   "device_location": null,
   "gps_location": null,
   "main_crop": "",
-  "crops": [
-    "Chilli"
-  ],
-  "farm_size": "50",
+  "crops": [],
+  "farm_size": "",
   "crop_variety": "",
   "crop_varieties": [],
   "soil_type": "",
@@ -17,5 +15,5 @@
   "growth_stage": "",
   "sowing_date": "",
   "preferred_language": "te",
-  "completed": true
+  "completed": false
 }

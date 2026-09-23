@@ -926,24 +926,69 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         ])
         if is_greeting and not any(k in q_lower for k in ["price", "weather", "spray", "photo", "25", "calculate", "write", "translate", "rate", "compare", "do today"]):
             farmer_name = profile.name.strip() if profile and getattr(profile, "name", None) else ""
+            prof_crop = (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else (getattr(profile, "main_crop", None) or "")).strip() if profile else ""
+            prof_var = (getattr(profile, "crop_variety", "") or (profile.crop_varieties[0] if getattr(profile, "crop_varieties", None) and len(profile.crop_varieties) > 0 else "")).strip() if profile else ""
+            if prof_var.lower() in ["all", "none", "all varieties", ""]:
+                prof_var = ""
+            prof_loc = (getattr(profile, "farm_location", "") or getattr(profile, "location", "")).strip() if profile else ""
+            var_str = f" ({prof_var})" if prof_var else ""
+            loc_short = prof_loc.split(",")[0].strip() if prof_loc else ""
+
+            crop_te = cls.CROP_TE_MAP.get(prof_crop, prof_crop) if prof_crop else ""
+            crop_hi = cls.CROP_HI_MAP.get(prof_crop, prof_crop) if prof_crop else ""
+
             if effective_lang == "te":
                 salutation = f"**{farmer_name} గారు**" if farmer_name else "**రైతు గారు**"
-                reply = f"""నమస్కారం {salutation}! 🙏\n\nనేను మీ **కిసాన్ మిత్ర** – మీ వ్యక్తిగత వ్యవసాయ సహాయకుడిని.\n\nనేను మీకు లైవ్ మార్కెట్ ధరలు, ఖచ్చితమైన వాతావరణ సమాచారం, పంట రక్షణ సలహాలు అందించగలను.\n\nఈరోజు నేను మీకు ఎలా సహాయపడగలను?"""
-                spoken = f"నమస్కారం {farmer_name or 'రైతు గారు'}. నేను మీ కిసాన్ మిత్ర. మార్కెట్ ధరలు, వాతావరణం లేదా పంట రక్షణ గురించి నన్ను అడగవచ్చు."
+                if prof_crop:
+                    loc_phrase = f"{loc_short} లోని " if loc_short else ""
+                    tailor_phrase = f"మీ {loc_phrase}**{crop_te}{var_str}** తోటకు వ్యక్తిగత సహాయకుడిని"
+                    spoken_crop = f"మీ {crop_te} తోటకు సహాయకుడిని"
+                    actions = [f"💰 {crop_te}{var_str} ధరలు", "🌦️ పొలం వాతావరణం", f"🌱 {crop_te} సస్యరక్షణ"]
+                else:
+                    tailor_phrase = "మీ వ్యక్తిగత వ్యవసాయ సహాయకుడిని"
+                    spoken_crop = "మీ వ్యవసాయ సహాయకుడిని"
+                    actions = ["💰 మార్కెట్ ధరలు", "🌦️ నేటి వాతావరణం", "🌱 పంట సలహాలు"]
+
+                reply = f"""నమస్కారం {salutation}! 🙏\n\nనేను మీ **కిసాన్ మిత్ర** – {tailor_phrase}.\n\nనేను మీకు లైవ్ మార్కెట్ ధరలు, ఖచ్చితమైన వాతావరణ సమాచారం, పంట రక్షణ సలహాలు అందించగలను.\n\nఈరోజు నేను మీకు ఎలా సహాయపడగలను?"""
+                spoken = f"నమస్కారం {farmer_name or 'రైతు గారు'}. నేను మీ కిసాన్ మిత్ర, {spoken_crop}. మార్కెట్ ధరలు, వాతావరణం లేదా పంట రక్షణ గురించి నన్ను అడగవచ్చు."
+
             elif effective_lang == "hi":
                 salutation = f"**{farmer_name} जी**" if farmer_name else "**किसान भाई**"
-                reply = f"""नमस्ते {salutation}! 🙏\n\nमैं हूँ आपका **किसानमित्र** – आपका निजी स्मार्ट कृषि सहायक।\n\nमैं आपकी लाइव मंडी भाव, मौसम पूर्वानुमान एवं फसल सुरक्षा में सहायता कर सकता हूँ।\n\nआज मैं आपकी क्या सहायता कर सकता हूँ?"""
-                spoken = f"नमस्ते {farmer_name or 'किसान भाई'}। मैं किसानमित्र हूँ। मंडी भाव, मौसम या फसल सुरक्षा की जानकारी के लिए पूछें।"
+                if prof_crop:
+                    loc_phrase = f"{loc_short} स्थित " if loc_short else ""
+                    tailor_phrase = f"आपके {loc_phrase}**{crop_hi}{var_str}** खेत के लिए समर्पित स्मार्ट कृषि सहायक"
+                    spoken_crop = f"आपकी {crop_hi} फसल के लिए सहायक"
+                    actions = [f"💰 {crop_hi}{var_str} भाव", "🌦️ खेत का मौसम", f"🌱 {crop_hi} सलाह"]
+                else:
+                    tailor_phrase = "आपका निजी स्मार्ट कृषि सहायक"
+                    spoken_crop = "आपका कृषि सहायक"
+                    actions = ["💰 मंडी भाव", "🌦️ आज का मौसम", "🌱 फसल सुरक्षा सलाह"]
+
+                reply = f"""नमस्ते {salutation}! 🙏\n\nमैं हूँ आपका **किसानमित्र** – {tailor_phrase}।\n\nमैं आपकी लाइव मंडी भाव, मौसम पूर्वानुमान एवं फसल सुरक्षा में सहायता कर सकता हूँ।\n\nआज मैं आपकी क्या सहायता कर सकता हूँ?"""
+                spoken = f"नमस्ते {farmer_name or 'किसान भाई'}। मैं किसानमित्र हूँ, {spoken_crop}। मंडी भाव, मौसम या फसल सुरक्षा की जानकारी के लिए पूछें।"
+
             else:
                 salutation = f"**{farmer_name}**" if farmer_name else "**Farmer**"
-                reply = f"""Hello {salutation}! 🙏\n\nI am **KisanMitra** – your intelligent AI farming companion tailored for your farm.\n\nI can help you with live APMC mandi rates, hyper-local agro-weather, and plant health protection.\n\nHow can I assist you today?"""
-                spoken = f"Hello {farmer_name or 'Farmer'}. I am KisanMitra. Ask me about today's mandi prices, weather forecasts, or crop health."
+                if prof_crop:
+                    loc_phrase = f" in {loc_short}" if loc_short else ""
+                    tailor_phrase = f"tailored for your **{prof_crop}{var_str}** farm{loc_phrase}"
+                    spoken_crop = f"tailored for your {prof_crop} farm"
+                    actions = [f"💰 {prof_crop}{var_str} Price", "🌦️ Farm Weather", f"🌱 {prof_crop} Advice"]
+                else:
+                    tailor_phrase = "tailored for your farm"
+                    spoken_crop = "for your farm"
+                    actions = ["💰 Check Market Prices", "🌦️ Today's Weather", "🌱 Crop Health Advice"]
+
+                reply = f"""Hello {salutation}! 🙏\n\nI am **KisanMitra** – your intelligent AI farming companion {tailor_phrase}.\n\nI can help you with live APMC mandi rates, hyper-local agro-weather, and plant health protection.\n\nHow can I assist you today?"""
+                spoken = f"Hello {farmer_name or 'Farmer'}. I am KisanMitra {spoken_crop}. Ask me about today's mandi prices, weather forecasts, or crop health."
+
             return {
                 "reply": reply,
                 "spoken_text": spoken.strip(),
                 "tool_used": "welcome_bot",
                 "detected_language": effective_lang,
-                "suggested_actions": ["💰 Check Market Prices", "🌦️ Today's Weather", "🌱 Crop Health Advice"]
+                "context_applied": {"crop": prof_crop or "None", "variety": prof_var or "None", "location": loc_short or "None"},
+                "suggested_actions": actions
             }
 
         # -------------------------------------------------------------

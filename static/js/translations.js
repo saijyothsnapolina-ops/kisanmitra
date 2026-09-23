@@ -8,6 +8,9 @@ export const cropTranslations = {
   en: {
     Tomato: "Tomato",
     Chilli: "Chilli",
+    "Red Chilli": "Red Chilli",
+    "Green Chilli": "Green Chilli",
+    Mirchi: "Chilli",
     Cotton: "Cotton",
     Paddy: "Paddy",
     Rice: "Paddy",
@@ -15,11 +18,21 @@ export const cropTranslations = {
     Maize: "Maize",
     Groundnut: "Groundnut",
     Turmeric: "Turmeric",
-    Potato: "Potato"
+    Potato: "Potato",
+    Wheat: "Wheat",
+    Soyabean: "Soyabean",
+    Sugarcane: "Sugarcane",
+    Mango: "Mango",
+    Banana: "Banana",
+    Gram: "Gram",
+    Pulses: "Pulses"
   },
   te: {
     Tomato: "టమోటా",
     Chilli: "మిర్చి",
+    "Red Chilli": "ఎండుమిర్చి",
+    "Green Chilli": "పచ్చిమిర్చి",
+    Mirchi: "మిర్చి",
     Cotton: "పత్తి",
     Paddy: "వరి",
     Rice: "వరి",
@@ -27,11 +40,21 @@ export const cropTranslations = {
     Maize: "మొక్కజొన్న",
     Groundnut: "వేరుశనగ",
     Turmeric: "పసుపు",
-    Potato: "బంగాళాదుంప"
+    Potato: "బంగాళాదుంప",
+    Wheat: "గోధుమలు",
+    Soyabean: "సోయాబీన్",
+    Sugarcane: "చెరకు",
+    Mango: "మామిడి",
+    Banana: "అరటి",
+    Gram: "శనగలు",
+    Pulses: "పప్పుధాన్యాలు"
   },
   hi: {
     Tomato: "टमाटर",
     Chilli: "मिर्च",
+    "Red Chilli": "लाल मिर्च",
+    "Green Chilli": "हरी मिर्च",
+    Mirchi: "मिर्च",
     Cotton: "कपास",
     Paddy: "धान",
     Rice: "धान",
@@ -39,7 +62,14 @@ export const cropTranslations = {
     Maize: "मक्का",
     Groundnut: "मूंगफली",
     Turmeric: "हल्दी",
-    Potato: "आलू"
+    Potato: "आलू",
+    Wheat: "गेहूं",
+    Soyabean: "सोयाबीन",
+    Sugarcane: "गन्ना",
+    Mango: "आम",
+    Banana: "केला",
+    Gram: "चना",
+    Pulses: "दालें"
   }
 };
 
@@ -76,7 +106,7 @@ export const translations = {
     inputPlaceholder: "Ask KisanMitra about your farm...",
 
     // Quick Action Prompts
-    qPromptMarketPrice: "What is the tomato price today?",
+    qPromptMarketPrice: "What is the market price today?",
     qPromptPriceHistory: "Show price history and price trends for my crop",
     qPromptCompareMarkets: "Where is my crop getting the highest price?",
     qPromptWeather: "What is the weather and spray advisory for my farm?",
@@ -367,7 +397,7 @@ export const translations = {
     inputPlaceholder: "వ్యవసాయం గురించి కిసాన్ మిత్రను అడగండి...",
 
     // Quick Action Prompts
-    qPromptMarketPrice: "ఈరోజు టమోటా ధర ఎంత?",
+    qPromptMarketPrice: "ఈరోజు మార్కెట్ ధర ఎంత?",
     qPromptPriceHistory: "నా పంట ధరల చరిత్ర మరియు పోకడలు చూపించు",
     qPromptCompareMarkets: "నా పంటకు అత్యధిక ధర ఎక్కడ లభిస్తుంది?",
     qPromptWeather: "నా పొలం వద్ద వాతావరణం మరియు పిచికారీ సలహా ఏమిటి?",
@@ -658,7 +688,7 @@ export const translations = {
     inputPlaceholder: "खेती के बारे में किसानमित्र से पूछें...",
 
     // Quick Action Prompts
-    qPromptMarketPrice: "आज टमाटर का भाव क्या है?",
+    qPromptMarketPrice: "आज मंडी भाव क्या है?",
     qPromptPriceHistory: "मेरी फसल के भाव का इतिहास और रुझान दिखाएं",
     qPromptCompareMarkets: "मेरी फसल का सबसे अधिक भाव कहां मिल रहा है?",
     qPromptWeather: "मेरे खेत के लिए मौसम और छिड़काव परामर्श क्या है?",

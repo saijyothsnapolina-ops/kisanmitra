@@ -548,6 +548,9 @@ async function loadInitialState() {
       state.profile = profile;
       state.farmLocation = profile.farm_location || profile.location || '';
       state.deviceLocation = profile.device_location || null;
+      if (profile.crops && profile.crops.length > 0) {
+        state.marketCrop = profile.crops[0];
+      }
       updateHeaderProfileUI(true);
       updateProfileViewUI();
       if (state.farmLocation && dom.headerLocationName) {
@@ -558,14 +561,19 @@ async function loadInitialState() {
       if (profile) {
         state.farmLocation = profile.farm_location || profile.location || '';
         state.deviceLocation = profile.device_location || null;
+        if (profile.crops && profile.crops.length > 0) {
+          state.marketCrop = profile.crops[0];
+        }
       }
       updateHeaderProfileUI(false);
       updateProfileViewUI();
     }
+    updateChatbotAutomationGreeting();
   } catch (err) {
     console.warn('Initial profile load error:', err);
     state.profileCompleted = false;
     updateHeaderProfileUI(false);
+    updateChatbotAutomationGreeting();
   }
 
   // Gracefully check if browser already allowed geolocation
@@ -688,6 +696,206 @@ async function requestUserLocation(promptUser = false) {
   );
 }
 
+// -------------------------------------------------------------
+// Chatbot Dynamic Profile-Adaptive Automation & Welcome Card
+// -------------------------------------------------------------
+function updateChatbotAutomationGreeting() {
+  const p = state.profile || {};
+  const crop = (p.crops && p.crops.length > 0 ? p.crops[0] : (p.main_crop || '')).trim();
+  let variety = (p.crop_variety || (p.crop_varieties && p.crop_varieties.length > 0 ? p.crop_varieties[0] : '')).trim();
+  if (['all', 'none', 'all varieties', ''].includes(variety.toLowerCase())) {
+    variety = '';
+  }
+  const farmerName = (p.name || '').trim();
+  const farmLoc = (state.farmLocation || p.farm_location || p.location || '').trim();
+  const farmLocShort = farmLoc ? farmLoc.split(',')[0].trim() : '';
+
+  const lang = state.lang || 'en';
+  const t = translations[lang] || translations.en;
+  const cropNames = cropTranslations[lang] || cropTranslations.en;
+  const localizedCrop = crop ? (cropNames[crop] || crop) : '';
+  const varietyStr = variety ? ` (${variety})` : '';
+
+  // 1. Welcome Badge
+  const welcomeBadge = document.querySelector('.welcome-badge-tag');
+  if (welcomeBadge) {
+    if (crop) {
+      if (lang === 'te') {
+        welcomeBadge.textContent = `🌾 ${localizedCrop}${varietyStr} తోట సహాయకుడు`;
+      } else if (lang === 'hi') {
+        welcomeBadge.textContent = `🌾 ${localizedCrop}${varietyStr} सहायक`;
+      } else {
+        welcomeBadge.textContent = `🌾 Companion for ${crop}${varietyStr}`;
+      }
+    } else {
+      welcomeBadge.textContent = t.welcomeBadge || '🌾 Farming Companion';
+    }
+  }
+
+  // 2. Greeting Title
+  const greetingEl = document.querySelector('.companion-greeting');
+  if (greetingEl) {
+    if (farmerName) {
+      if (lang === 'te') {
+        greetingEl.textContent = `నమస్కారం ${farmerName} గారు! 🙏`;
+      } else if (lang === 'hi') {
+        greetingEl.textContent = `नमस्ते ${farmerName} जी! 🙏`;
+      } else {
+        greetingEl.textContent = `Welcome, ${farmerName}! 🙏`;
+      }
+    } else {
+      greetingEl.textContent = t.welcomeTitle || 'Welcome to KisanMitra';
+    }
+  }
+
+  // 3. Greeting Subtitle / Description
+  const descEl = document.querySelector('.companion-description');
+  if (descEl) {
+    if (crop) {
+      if (lang === 'te') {
+        const locPart = farmLocShort ? `మీ ${farmLocShort} లోని ` : 'మీ ';
+        descEl.textContent = `${locPart}${localizedCrop}${varietyStr} తోట సమాచారం కొరకు కిసాన్ మిత్ర సిద్ధంగా ఉంది.`;
+      } else if (lang === 'hi') {
+        const locPart = farmLocShort ? `आपके ${farmLocShort} स्थित ` : 'आपके ';
+        descEl.textContent = `${locPart}${localizedCrop}${varietyStr} खेत के लिए समर्पित स्मार्ट कृषि साथी।`;
+      } else {
+        const locPart = farmLocShort ? ` in ${farmLocShort}` : '';
+        descEl.textContent = `Tailored for your ${crop}${varietyStr} farm${locPart}. Ask about prices, weather, and crop health.`;
+      }
+    } else {
+      descEl.textContent = t.welcomeSubtitle || 'Ask about your crop, market prices, weather or farming.';
+    }
+  }
+
+  // 4. Quick Actions Heading
+  const qaHeading = document.querySelector('.quick-actions-heading');
+  if (qaHeading) qaHeading.textContent = t.quickActionsHeading || 'Quick Actions';
+
+  // 5. Quick Actions Strip (Dynamic per user's saved profile crop)
+  let actionConfig = {};
+  if (crop) {
+    if (lang === 'te') {
+      actionConfig = {
+        market_prices: {
+          label: `${localizedCrop}${varietyStr} ధర`,
+          query: `ఈరోజు ${localizedCrop}${varietyStr} మార్కెట్ ధర ఎంత?`
+        },
+        price_history: {
+          label: `${localizedCrop} ధరల చరిత్ర`,
+          query: `${localizedCrop} ధరల వివరాలు మరియు ట్రెండ్స్ చూపించండి`
+        },
+        compare_markets: {
+          label: 'సమీప మార్కెట్లు',
+          query: `${localizedCrop} పంటకు ఎక్కడ ఎక్కువ ధర పలుకుతోంది?`
+        },
+        weather: {
+          label: 'పొలం వాతావరణం',
+          query: farmLocShort ? `${farmLocShort} వద్ద వాతావరణం మరియు స్ప్రే సలహా ఏమిటి?` : 'మా పొలానికి వాతావరణం మరియు స్ప్రే సలహా ఏమిటి?'
+        },
+        crop_help: {
+          label: `${localizedCrop} సస్యరక్షణ`,
+          query: `${localizedCrop} పంటకు ఏ ఎరువు లేదా పురుగుమందు వాడాలి?`
+        },
+        crop_photo: {
+          label: 'పంట ఫోటో పరీక్ష',
+          query: `నా ${localizedCrop} పంట ఫోటోను పరిశీలించి తెగులు నివారణ తెలపండి`
+        }
+      };
+    } else if (lang === 'hi') {
+      actionConfig = {
+        market_prices: {
+          label: `${localizedCrop}${varietyStr} भाव`,
+          query: `आज ${localizedCrop}${varietyStr} का मंडी भाव क्या है?`
+        },
+        price_history: {
+          label: `${localizedCrop} भाव इतिहास`,
+          query: `${localizedCrop} के भाव का इतिहास और रुझान दिखाएं`
+        },
+        compare_markets: {
+          label: 'आस-पास की मंडियां',
+          query: `${localizedCrop} को किस मंडी में सबसे अधिक भाव मिल रहा है?`
+        },
+        weather: {
+          label: 'खेत का मौसम',
+          query: farmLocShort ? `${farmLocShort} में मौसम और छिड़काव सलाह क्या है?` : 'मेरे खेत के लिए मौसम और छिड़काव की सलाह क्या है?'
+        },
+        crop_help: {
+          label: `${localizedCrop} सलाह`,
+          query: `${localizedCrop} फसल के लिए कौन सी खाद या कीटनाशक डालें?`
+        },
+        crop_photo: {
+          label: 'फसल फोटो जांच',
+          query: `मेरे ${localizedCrop} फसल की फोटो देखकर रोग व उपचार बताएं`
+        }
+      };
+    } else {
+      actionConfig = {
+        market_prices: {
+          label: `${crop}${varietyStr} Price`,
+          query: `What is the ${crop}${varietyStr} price today?`
+        },
+        price_history: {
+          label: `${crop} History`,
+          query: `Show price history and price trends for ${crop}`
+        },
+        compare_markets: {
+          label: 'Nearby Markets',
+          query: `Where is ${crop} getting the highest price?`
+        },
+        weather: {
+          label: 'Farm Weather',
+          query: farmLocShort ? `What is the weather and spray advisory for ${farmLocShort}?` : 'What is the weather and spray advisory for my farm?'
+        },
+        crop_help: {
+          label: `${crop} Advice`,
+          query: `What fertilizer or pest remedy should I apply for ${crop}?`
+        },
+        crop_photo: {
+          label: 'Check Crop Photo',
+          query: `Analyze my ${crop} photo for pest or disease`
+        }
+      };
+    }
+  } else {
+    // Neutral fallback when no crop is saved in profile
+    actionConfig = {
+      market_prices: { label: t.marketPrices, query: t.qPromptMarketPrice },
+      price_history: { label: t.priceHistory, query: t.qPromptPriceHistory },
+      compare_markets: { label: t.compareMarkets, query: t.qPromptCompareMarkets },
+      weather: { label: t.weather, query: t.qPromptWeather },
+      crop_help: { label: t.cropHelp, query: t.qPromptCropHelp },
+      crop_photo: { label: t.analyzePhoto, query: t.qPromptCropPhoto }
+    };
+  }
+
+  if (dom.compactActionBtns) {
+    dom.compactActionBtns.forEach(btn => {
+      const action = btn.getAttribute('data-action');
+      const conf = actionConfig[action];
+      if (conf) {
+        const labelSpan = btn.querySelector('.action-label');
+        if (labelSpan) labelSpan.textContent = conf.label;
+        btn.setAttribute('data-query', conf.query);
+      }
+    });
+  }
+
+  // 6. Input Placeholder
+  if (dom.chatInput) {
+    if (crop) {
+      if (lang === 'te') {
+        dom.chatInput.placeholder = `${localizedCrop}, మార్కెట్ ధరలు, వాతావరణం గురించి అడగండి...`;
+      } else if (lang === 'hi') {
+        dom.chatInput.placeholder = `${localizedCrop}, मंडी भाव, मौसम के बारे में पूछें...`;
+      } else {
+        dom.chatInput.placeholder = `Ask about ${crop}, market prices, weather...`;
+      }
+    } else {
+      dom.chatInput.placeholder = t.inputPlaceholder || 'Ask KisanMitra about your farm...';
+    }
+  }
+}
+
 function setLanguage(lang) {
   if (!translations[lang]) lang = 'en';
   state.lang = lang;
@@ -712,18 +920,10 @@ function setLanguage(lang) {
   const headerTagline = document.querySelector('.header-tagline');
   if (headerTagline) headerTagline.textContent = `"${t.brandTagline}"`;
 
-  // Update Welcome Card
-  const welcomeBadge = document.querySelector('.welcome-badge-tag');
-  if (welcomeBadge) welcomeBadge.textContent = t.welcomeBadge;
-  const greetingEl = document.querySelector('.companion-greeting');
-  if (greetingEl) greetingEl.textContent = t.welcomeTitle;
-  const descEl = document.querySelector('.companion-description');
-  if (descEl) descEl.textContent = t.welcomeSubtitle;
-  const qaHeading = document.querySelector('.quick-actions-heading');
-  if (qaHeading) qaHeading.textContent = t.quickActionsHeading;
+  // Update Welcome Card & Quick Actions dynamically based on user profile
+  updateChatbotAutomationGreeting();
 
-  // Update Input placeholder & Voice labels
-  if (dom.chatInput) dom.chatInput.placeholder = t.inputPlaceholder;
+  // Voice labels
   if (dom.speakingStatusText && VoiceController.isSpeaking) {
     dom.speakingStatusText.textContent = t.voiceSpeaking || 'KisanMitra is speaking...';
   }
@@ -768,27 +968,6 @@ function setLanguage(lang) {
 
   if (dom.attachmentMainText) dom.attachmentMainText.textContent = t.photoAttachedText;
   if (dom.attachmentChangeBtn) dom.attachmentChangeBtn.textContent = `🔄 ${t.changePhoto || 'Change'}`;
-
-  // Update Quick Actions
-  const actionMap = {
-    market_prices: { label: t.marketPrices, query: t.qPromptMarketPrice },
-    price_history: { label: t.priceHistory, query: t.qPromptPriceHistory },
-    compare_markets: { label: t.compareMarkets, query: t.qPromptCompareMarkets },
-    weather: { label: t.weather, query: t.qPromptWeather },
-    crop_help: { label: t.cropHelp, query: t.qPromptCropHelp },
-    crop_photo: { label: t.analyzePhoto, query: t.qPromptCropPhoto }
-  };
-  if (dom.compactActionBtns) {
-    dom.compactActionBtns.forEach(btn => {
-      const action = btn.getAttribute('data-action');
-      const conf = actionMap[action];
-      if (conf) {
-        const labelSpan = btn.querySelector('.action-label');
-        if (labelSpan) labelSpan.textContent = conf.label;
-        btn.setAttribute('data-query', conf.query);
-      }
-    });
-  }
 
   // Update Nav items
   const navMap = {
@@ -1061,11 +1240,13 @@ function navigateToView(tabId) {
   if (tabId === 'market') {
     loadMarketData(state.marketCrop, state.marketRange, state.marketDate, state.marketVariety);
   } else if (tabId === 'weather') {
-    loadWeatherData(state.profile.location || 'Guntur');
+    loadWeatherData(state.farmLocation || state.profile.farm_location || state.profile.location || 'Guntur');
   } else if (tabId === 'crops') {
     loadCropsData();
   } else if (tabId === 'profile') {
     updateProfileViewUI();
+  } else if (tabId === 'chat') {
+    updateChatbotAutomationGreeting();
   }
 }
 
@@ -1518,9 +1699,13 @@ async function handleProfileFormSubmit(e) {
     const res = await api.saveProfile(payload);
     state.profile = res.profile;
     state.farmLocation = location;
+    if (crops.length > 0) {
+      state.marketCrop = crops[0];
+    }
     state.profileCompleted = true;
     updateHeaderProfileUI(true);
     updateProfileViewUI();
+    updateChatbotAutomationGreeting();
     closeProfileModal();
 
     // AUTOMATICALLY RESUME PRESERVED USER QUERY
@@ -1554,8 +1739,10 @@ async function handleResetProfile() {
         irrigation_type: '',
         growth_stage: ''
       };
+      state.marketCrop = 'Tomato';
       updateHeaderProfileUI(false);
       updateProfileViewUI();
+      updateChatbotAutomationGreeting();
       navigateToView('chat');
     } catch (err) {
       console.error('Reset error:', err);
@@ -1658,7 +1845,7 @@ function renderCurrentMarketPage() {
 
 async function loadMarketData(crop = state.marketCrop, range = state.marketRange, date = state.marketDate, variety = state.marketVariety) {
   try {
-    state.marketCrop = crop || 'Tomato';
+    state.marketCrop = crop || (state.profile && state.profile.crops && state.profile.crops.length > 0 ? state.profile.crops[0] : 'Tomato');
     state.marketRange = range || '7D';
     state.marketDate = date || 'Yesterday';
     state.marketVariety = variety || 'all';

@@ -362,6 +362,79 @@ class TestCoreTwoProblems(unittest.TestCase):
         self.assertIn("మీరు ఏ పంట ధర గురించి తెలుసుకోవాలనుకుంటున్నారు?", res["reply"])
         self.assertNotIn("Chilli", res.get("context_applied", {}).get("crop", ""))
 
+    def test_greeting_automation_message_with_profile(self):
+        """
+        Chatbot automated greeting/welcome message must adapt to the user's profile:
+        - Uses farmer's name (Ramesh)
+        - Tailors to saved crop (Chilli / మిర్చి), variety (341), farm location (Cherla)
+        - Suggested actions dynamically target Chilli (341) prices, farm weather, Chilli crop care
+        - NEVER assumes Tomato or any fixed crop
+        """
+        self.client.post("/api/profile", json={
+            "name": "Ramesh",
+            "farm_location": "Cherla, Bhadradri Kothagudem, Telangana",
+            "crops": ["Chilli"],
+            "crop_variety": "341",
+            "farm_size": "3 Acres"
+        })
+
+        # Test greeting in Telugu
+        res_te = self.client.post("/api/chat", json={
+            "message": "నమస్కారం",
+            "conversation_id": "test-greeting-prof-te",
+            "lang": "te"
+        }).json()
+        self.assertEqual(res_te["tool_used"], "welcome_bot")
+        self.assertIn("Ramesh", res_te["reply"])
+        self.assertIn("మిర్చి", res_te["reply"])
+        self.assertIn("341", res_te["reply"])
+        self.assertIn("Cherla", res_te["reply"])
+        self.assertNotIn("టమోటా", res_te["reply"])
+        self.assertTrue(any("మిర్చి" in act for act in res_te["suggested_actions"]))
+
+        # Test greeting in English
+        res_en = self.client.post("/api/chat", json={
+            "message": "Hello",
+            "conversation_id": "test-greeting-prof-en",
+            "lang": "en"
+        }).json()
+        self.assertEqual(res_en["tool_used"], "welcome_bot")
+        self.assertIn("Ramesh", res_en["reply"])
+        self.assertIn("Chilli", res_en["reply"])
+        self.assertIn("341", res_en["reply"])
+        self.assertIn("Cherla", res_en["reply"])
+        self.assertNotIn("Tomato", res_en["reply"])
+        self.assertTrue(any("Chilli" in act for act in res_en["suggested_actions"]))
+
+    def test_greeting_automation_message_with_empty_profile(self):
+        """
+        Chatbot automated greeting for an empty profile:
+        - Clean neutral greeting
+        - No hardcoded assumption of Tomato or Chilli
+        - Useful general farming suggested actions
+        """
+        self.client.post("/api/profile/reset")
+
+        res = self.client.post("/api/chat", json={
+            "message": "Hello",
+            "conversation_id": "test-greeting-empty",
+            "profile": {
+                "name": "",
+                "farm_location": "",
+                "crops": [],
+                "crop_variety": "",
+                "farm_size": "",
+                "completed": False
+            },
+            "lang": "en"
+        }).json()
+        self.assertEqual(res["tool_used"], "welcome_bot")
+        self.assertNotIn("Tomato", res["reply"])
+        self.assertNotIn("Chilli", res["reply"])
+        self.assertIn("KisanMitra", res["reply"])
+        self.assertEqual(res["suggested_actions"], ["💰 Check Market Prices", "🌦️ Today's Weather", "🌱 Crop Health Advice"])
+
 if __name__ == "__main__":
     unittest.main()
+
 
