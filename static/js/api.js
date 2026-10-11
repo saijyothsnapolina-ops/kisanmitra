@@ -204,6 +204,21 @@ export const api = {
   },
 
   /**
+   * Fetch ML market price forecast (7-day trajectory, 95% CI, validation metrics)
+   */
+  async getMarketPriceForecast(crop = 'Chilli', variety = '', market = '', horizon = 7) {
+    const params = new URLSearchParams();
+    if (crop) params.append('crop', crop);
+    if (variety) params.append('variety', variety);
+    if (market) params.append('market', market);
+    if (horizon) params.append('horizon', horizon);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/market/forecast${queryString}`);
+    if (!res.ok) throw new Error('Failed to load market price forecast');
+    return res.json();
+  },
+
+  /**
    * Fetch weather forecast and agricultural advisory
    */
   async getWeather(location = '') {

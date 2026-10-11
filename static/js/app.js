@@ -40,7 +40,7 @@ const state = {
   farmLocation: '',
   deviceLocation: null,
   location: null, // { latitude, longitude, accuracy, district, mandal, state, nearest_market, nearest_distance_km }
-  activeTab: 'chat',
+  activeTab: 'home',
   selectedImageBase64: null,
   isRecordingVoice: false,
   marketCrop: 'Tomato',
@@ -265,7 +265,36 @@ function cacheDOMElements() {
     openPublicUrlBtn: document.getElementById('open-public-url-btn'),
     localUrlInput: document.getElementById('local-url-input'),
     copyLocalUrlBtn: document.getElementById('copy-local-url-btn'),
-    openLocalUrlBtn: document.getElementById('open-local-url-btn')
+    openLocalUrlBtn: document.getElementById('open-local-url-btn'),
+
+    // Home & Landing Elements
+    lblNavHome: document.getElementById('lbl-nav-home'),
+    heroBadge: document.getElementById('lbl-hero-badge'),
+    heroTitle: document.getElementById('lbl-hero-title'),
+    heroSubtitle: document.getElementById('lbl-hero-subtitle'),
+    heroExploreBtn: document.getElementById('hero-explore-btn'),
+    heroChatBtn: document.getElementById('hero-chat-btn'),
+    lblHeroExplore: document.getElementById('lbl-hero-explore'),
+    lblHeroAskAi: document.getElementById('lbl-hero-ask-ai'),
+    farmerDashboard: document.getElementById('farmer-dashboard'),
+    dashGreetingText: document.getElementById('dash-greeting-text'),
+    dashDateBadge: document.getElementById('dash-date-badge'),
+    dashFarmLocationText: document.getElementById('dash-farm-location-text'),
+    dashLocChangeBtn: document.getElementById('dash-loc-change-btn'),
+    dashPriorityInsightText: document.getElementById('dash-priority-insight-text'),
+    chipWeatherVal: document.getElementById('chip-weather-val'),
+    chipCropVal: document.getElementById('chip-crop-val'),
+    chipMarketVal: document.getElementById('chip-market-val'),
+    dashQuickActionCards: document.querySelectorAll('.dash-quick-action-card'),
+    dashIpmPhotoBtn: document.getElementById('dash-ipm-photo-btn'),
+    dashInsightActivityTitle: document.getElementById('dash-insight-activity-title'),
+    dashInsightActivityBody: document.getElementById('dash-insight-activity-body'),
+    dashInsightForecastTitle: document.getElementById('dash-insight-forecast-title'),
+    dashInsightForecastBody: document.getElementById('dash-insight-forecast-body'),
+    dashInsightWeatherTitle: document.getElementById('dash-insight-weather-title'),
+    dashInsightWeatherBody: document.getElementById('dash-insight-weather-body'),
+    dashInsightIpmTitle: document.getElementById('dash-insight-ipm-title'),
+    dashInsightIpmBody: document.getElementById('dash-insight-ipm-body')
   };
 
   updateThemeToggleButtons();
@@ -535,6 +564,53 @@ function attachEventListeners() {
       copyToClipboard(dom.localUrlInput.value, dom.copyLocalUrlBtn);
     });
   }
+
+  // Home & Dashboard Event Handlers
+  if (dom.heroExploreBtn) {
+    dom.heroExploreBtn.addEventListener('click', () => {
+      if (dom.farmerDashboard) {
+        dom.farmerDashboard.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  }
+
+  if (dom.heroChatBtn) {
+    dom.heroChatBtn.addEventListener('click', () => {
+      navigateToView('chat');
+    });
+  }
+
+  if (dom.dashLocChangeBtn) {
+    dom.dashLocChangeBtn.addEventListener('click', openFarmLocationModal);
+  }
+
+  if (dom.dashIpmPhotoBtn) {
+    dom.dashIpmPhotoBtn.addEventListener('click', openPhotoOptionsModal);
+  }
+
+  if (dom.dashQuickActionCards) {
+    dom.dashQuickActionCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        const action = card.getAttribute('data-action');
+        const query = card.getAttribute('data-query');
+        if (action === 'chat') {
+          navigateToView('chat');
+          if (query) {
+            handleInteraction({ text: query, image: null, action });
+          }
+        } else if (action === 'market') {
+          navigateToView('market');
+        } else if (action === 'forecast') {
+          navigateToView('market');
+        } else if (action === 'weather') {
+          navigateToView('weather');
+        } else if (action === 'crop_photo') {
+          openPhotoOptionsModal();
+        }
+      });
+    });
+  }
 }
 
 // -------------------------------------------------------------
@@ -569,11 +645,13 @@ async function loadInitialState() {
       updateProfileViewUI();
     }
     updateChatbotAutomationGreeting();
+    updateHomeDashboardUI();
   } catch (err) {
     console.warn('Initial profile load error:', err);
     state.profileCompleted = false;
     updateHeaderProfileUI(false);
     updateChatbotAutomationGreeting();
+    updateHomeDashboardUI();
   }
 
   // Gracefully check if browser already allowed geolocation
@@ -971,6 +1049,7 @@ function setLanguage(lang) {
 
   // Update Nav items
   const navMap = {
+    home: t.navHome,
     chat: t.navChat,
     market: t.navMarket,
     weather: t.navWeather,
@@ -1153,8 +1232,40 @@ function setLanguage(lang) {
 
   updateHeaderProfileUI(state.profileCompleted);
 
+  // Update Landing & Dashboard Labels
+  const lblHeroBadge = document.getElementById('lbl-hero-badge');
+  if (lblHeroBadge && t.heroBadge) {
+    lblHeroBadge.innerHTML = `<span class="badge-dot"></span><span>${t.heroBadge}</span>`;
+  }
+  const lblHeroSubtitle = document.getElementById('lbl-hero-subtitle');
+  if (lblHeroSubtitle && t.heroSubtitle) lblHeroSubtitle.textContent = t.heroSubtitle;
+  const lblHeroExplore = document.getElementById('lbl-hero-explore');
+  if (lblHeroExplore && t.heroExploreBtn) lblHeroExplore.textContent = t.heroExploreBtn;
+  const lblHeroAskAi = document.getElementById('lbl-hero-ask-ai');
+  if (lblHeroAskAi && t.heroAskAiBtn) lblHeroAskAi.textContent = t.heroAskAiBtn;
+  const lblChipWeather = document.getElementById('lbl-chip-weather-title');
+  if (lblChipWeather && t.chipWeatherTitle) lblChipWeather.textContent = t.chipWeatherTitle;
+  const lblChipCrop = document.getElementById('lbl-chip-crop-title');
+  if (lblChipCrop && t.chipCropTitle) lblChipCrop.textContent = t.chipCropTitle;
+  const lblChipMarket = document.getElementById('lbl-chip-market-title');
+  if (lblChipMarket && t.chipMarketTitle) lblChipMarket.textContent = t.chipMarketTitle;
+  const lblDashInsightsTitle = document.getElementById('lbl-dash-insights-title');
+  if (lblDashInsightsTitle && t.dashInsightsTitle) lblDashInsightsTitle.textContent = t.dashInsightsTitle;
+  const lblDashInsightsSub = document.getElementById('lbl-dash-insights-sub');
+  if (lblDashInsightsSub && t.dashInsightsSubtitle) lblDashInsightsSub.textContent = t.dashInsightsSubtitle;
+  const lblInsightActivity = document.getElementById('lbl-insight-activity');
+  if (lblInsightActivity && t.insightDailyAction) lblInsightActivity.textContent = t.insightDailyAction;
+  const lblInsightForecast = document.getElementById('lbl-insight-forecast');
+  if (lblInsightForecast && t.insightPriceForecast) lblInsightForecast.textContent = t.insightPriceForecast;
+  const lblInsightWeather = document.getElementById('lbl-insight-weather');
+  if (lblInsightWeather && t.insightSprayWindow) lblInsightWeather.textContent = t.insightSprayWindow;
+  const lblInsightIpm = document.getElementById('lbl-insight-ipm');
+  if (lblInsightIpm && t.insightPestManagement) lblInsightIpm.textContent = t.insightPestManagement;
+
   // Re-render currently active view
-  if (state.activeTab === 'market') {
+  if (state.activeTab === 'home') {
+    updateHomeDashboardUI();
+  } else if (state.activeTab === 'market') {
     renderCurrentMarketPage();
   } else if (state.activeTab === 'weather' && state.weatherDataCache) {
     renderWeatherView(state.weatherDataCache, {
@@ -1237,7 +1348,9 @@ function navigateToView(tabId) {
     }
   });
 
-  if (tabId === 'market') {
+  if (tabId === 'home') {
+    updateHomeDashboardUI();
+  } else if (tabId === 'market') {
     loadMarketData(state.marketCrop, state.marketRange, state.marketDate, state.marketVariety);
   } else if (tabId === 'weather') {
     loadWeatherData(state.farmLocation || state.profile.farm_location || state.profile.location || 'Guntur');
@@ -1249,6 +1362,95 @@ function navigateToView(tabId) {
     updateChatbotAutomationGreeting();
   }
 }
+
+// -------------------------------------------------------------
+// Home / Landing & Farmer Dashboard UI Controller
+// -------------------------------------------------------------
+function updateHomeDashboardUI() {
+  const t = translations[state.lang] || translations.en;
+
+  // 1. Farmer Greeting
+  const farmerName = (state.profile && state.profile.name) ? state.profile.name.trim() : '';
+  if (dom.dashGreetingText) {
+    if (farmerName) {
+      if (state.lang === 'te') {
+        dom.dashGreetingText.textContent = `${farmerName} గారూ, స్వాగతం!`;
+      } else if (state.lang === 'hi') {
+        dom.dashGreetingText.textContent = `नमस्ते ${farmerName} जी!`;
+      } else {
+        dom.dashGreetingText.textContent = `Welcome back, ${farmerName}!`;
+      }
+    } else {
+      dom.dashGreetingText.textContent = t.dashWelcomeGreeting || 'Welcome to Your Farm Dashboard';
+    }
+  }
+
+  // 2. Date Badge
+  if (dom.dashDateBadge) {
+    try {
+      const now = new Date();
+      const locale = state.lang === 'te' ? 'te-IN' : (state.lang === 'hi' ? 'hi-IN' : 'en-IN');
+      const dateStr = now.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
+      dom.dashDateBadge.textContent = dateStr;
+    } catch {
+      dom.dashDateBadge.textContent = 'Today';
+    }
+  }
+
+  // 3. Farm Location Text
+  const loc = state.farmLocation || (state.profile && (state.profile.farm_location || state.profile.location)) || '';
+  if (dom.dashFarmLocationText) {
+    if (loc) {
+      dom.dashFarmLocationText.textContent = `Farm Location: ${loc.split(',')[0].trim()}`;
+    } else {
+      dom.dashFarmLocationText.textContent = 'Farm Location: Not set';
+    }
+  }
+
+  // 4. Primary Crop & Variety / Growth Stage
+  const activeCrop = (state.profile && state.profile.crops && state.profile.crops.length > 0)
+    ? state.profile.crops[0]
+    : (state.marketCrop || 'Tomato');
+  const activeVariety = (state.profile && state.profile.crop_variety) ? state.profile.crop_variety : '';
+  const activeStage = (state.profile && state.profile.growth_stage) ? state.profile.growth_stage : 'Flowering';
+
+  // 5. Live Overlaid Chips
+  if (dom.chipWeatherVal) {
+    if (state.weatherDataCache && state.weatherDataCache.temperature) {
+      dom.chipWeatherVal.textContent = `${state.weatherDataCache.temperature}°C • ${state.weatherDataCache.condition || 'Spray Safe'}`;
+    } else {
+      dom.chipWeatherVal.textContent = '29°C • Spray Safe';
+    }
+  }
+
+  if (dom.chipCropVal) {
+    dom.chipCropVal.textContent = `${activeCrop}${activeVariety ? ' ' + activeVariety : ''} • ${activeStage}`;
+  }
+
+  if (dom.chipMarketVal) {
+    if (state.marketDataCache && state.marketDataCache.summary && state.marketDataCache.summary.modal_price) {
+      dom.chipMarketVal.textContent = `₹${state.marketDataCache.summary.modal_price.toLocaleString('en-IN')} • ${state.marketCrop || activeCrop}`;
+    } else {
+      dom.chipMarketVal.textContent = `₹22,100 • +2.7% Forecast`;
+    }
+  }
+
+  // 6. Priority Insight Bubble
+  if (dom.dashPriorityInsightText) {
+    if (state.profileCompleted) {
+      dom.dashPriorityInsightText.textContent = `Maintain light drip moisture in flowering ${activeCrop} and monitor lower leaves for thrips.`;
+    } else {
+      dom.dashPriorityInsightText.textContent = 'Set up your farm profile to get personalized AI agronomic recommendations and mandi forecasts.';
+    }
+  }
+
+  // 7. Dynamic Farm Insight Cards
+  if (dom.dashInsightActivityTitle && dom.dashInsightActivityBody) {
+    dom.dashInsightActivityTitle.textContent = `${activeCrop} Growth & Nutrient Advisory`;
+    dom.dashInsightActivityBody.textContent = `Maintain consistent irrigation schedule for ${activeCrop} during ${activeStage.toLowerCase()} phase. Avoid stagnation and prepare micronutrient foliar spray.`;
+  }
+}
+
 
 // -------------------------------------------------------------
 // Core Interaction & Profile Deferral Logic

@@ -85,11 +85,31 @@ export const translations = {
     statusSetup: "Setup",
 
     // Navigation
-    navChat: "Chat",
-    navMarket: "Market",
+    navHome: "Home",
+    navChat: "AI Assistant",
+    navMarket: "Market Prices",
     navWeather: "Weather",
     navCrops: "My Crops",
     navProfile: "Profile",
+
+    // Landing & Hero
+    heroBadge: "SMART FARMING • POWERED BY AI",
+    heroTitle: "Grow Smarter. Harvest Better.",
+    heroSubtitle: "KisanMitra is your intelligent digital farming companion, delivering live APMC mandi rates, AI price forecasting, hyperlocal agro-weather, and plant health protection in your language.",
+    heroExploreBtn: "Explore Your Farm",
+    heroAskAiBtn: "Ask AI Assistant",
+    chipWeatherTitle: "Agro-Weather",
+    chipCropTitle: "Crop Health",
+    chipMarketTitle: "Mandi Intelligence",
+    
+    // Farmer Dashboard & Insights
+    dashWelcomeGreeting: "Welcome to Your Farm Dashboard",
+    dashInsightsTitle: "Insights for Your Farm",
+    dashInsightsSubtitle: "Real-time agronomic intelligence, market forecasts, and hyper-local weather alerts tailored to your farm.",
+    insightDailyAction: "Daily Farm Activity",
+    insightPriceForecast: "7-Day Price Forecast",
+    insightSprayWindow: "Spray & Irrigation Window",
+    insightPestManagement: "Plant Protection (IPM)",
 
     // Chat View
     welcomeBadge: "🌾 Farming Companion",
@@ -376,11 +396,31 @@ export const translations = {
     statusSetup: "నమోదు",
 
     // Navigation
-    navChat: "చాట్",
-    navMarket: "మార్కెట్",
+    navHome: "హోమ్",
+    navChat: "ఏఐ సహాయకుడు",
+    navMarket: "మార్కెట్ ధరలు",
     navWeather: "వాతావరణం",
     navCrops: "నా పంటలు",
     navProfile: "ప్రొఫైల్",
+
+    // Landing & Hero
+    heroBadge: "స్మార్ట్ వ్యవసాయం • ఏఐ సాంకేతికత",
+    heroTitle: "తెలివిగా సాగు చేయండి. అధిక దిగుబడి సాధించండి.",
+    heroSubtitle: "కిసాన్ మిత్ర మీ తెలివైన డిజిటల్ వ్యవసాయ తోడ్పాటు – లైవ్ APMC మార్కెట్ ధరలు, ఏఐ ధరల అంచనాలు, వాతావరణ సమాచారం మరియు సస్యరక్షణ సలహాలు తెలుగులోనే అందిస్తుంది.",
+    heroExploreBtn: "మీ పొలాన్ని పరిశీలించండి",
+    heroAskAiBtn: "ఏఐ సహాయకుడిని అడగండి",
+    chipWeatherTitle: "వ్యవసాయ వాతావరణం",
+    chipCropTitle: "పంట ఆరోగ్యం",
+    chipMarketTitle: "మార్కెట్ సమాచారం",
+    
+    // Farmer Dashboard & Insights
+    dashWelcomeGreeting: "మీ వ్యవసాయ డాష్‌బోర్డుకు స్వాగతం",
+    dashInsightsTitle: "మీ తోటకు ముఖ్యమైన సమాచారం",
+    dashInsightsSubtitle: "మీ తోటకు అనుగుణంగా లైవ్ మార్కెట్ విశ్లేషణ, ఏఐ ధరల అంచనా మరియు వాతావరణ సూచనలు.",
+    insightDailyAction: "నేటి వ్యవసాయ పనులు",
+    insightPriceForecast: "7 రోజుల ధరల అంచనా",
+    insightSprayWindow: "పిచికారీ & నీటి యాజమాన్యం",
+    insightPestManagement: "సస్యరక్షణ సూచనలు (IPM)",
 
     // Chat View
     welcomeBadge: "🌾 వ్యవసాయ సహాయకుడు",
@@ -667,11 +707,31 @@ export const translations = {
     statusSetup: "नया",
 
     // Navigation
-    navChat: "चैट",
-    navMarket: "मंडी",
+    navHome: "होम",
+    navChat: "एआई सहायक",
+    navMarket: "मंडी भाव",
     navWeather: "मौसम",
     navCrops: "मेरी फसलें",
     navProfile: "प्रोफ़ाइल",
+
+    // Landing & Hero
+    heroBadge: "स्मार्ट कृषि • एआई पावर्ड",
+    heroTitle: "समझदारी से खेती करें। बेहतर पैदावार पाएं।",
+    heroSubtitle: "किसानमित्र आपका बुद्धिमान डिजिटल कृषि साथी है – लाइव एपीएमसी मंडी भाव, एआई मूल्य पूर्वानुमान, सटीक कृषि मौसम और फसल सुरक्षा सलाह आपकी अपनी भाषा में।",
+    heroExploreBtn: "अपना खेत देखें",
+    heroAskAiBtn: "एआई सहायक से पूछें",
+    chipWeatherTitle: "कृषि मौसम",
+    chipCropTitle: "फसल स्वास्थ्य",
+    chipMarketTitle: "मंडी जानकारी",
+    
+    // Farmer Dashboard & Insights
+    dashWelcomeGreeting: "आपके फार्म डैशबोर्ड में स्वागत है",
+    dashInsightsTitle: "आपके खेत के लिए महत्वपूर्ण सुझाव",
+    dashInsightsSubtitle: "आपके खेत के अनुसार लाइव मंडी विश्लेषण, एआई मूल्य पूर्वानुमान और मौसम की जानकारी।",
+    insightDailyAction: "आज का कृषि कार्य",
+    insightPriceForecast: "7-दिवसीय मूल्य पूर्वानुमान",
+    insightSprayWindow: "छिड़काव एवं सिंचाई समय",
+    insightPestManagement: "फसल सुरक्षा सुझाव (IPM)",
 
     // Chat View
     welcomeBadge: "🌾 कृषि साथी",

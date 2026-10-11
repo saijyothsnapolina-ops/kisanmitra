@@ -41,26 +41,30 @@
       <div class="sidebar-nav-container">
         <div class="sidebar-nav-heading">Menu</div>
         <nav class="sidebar-nav">
-          <button type="button" class="sidebar-nav-item active" data-tab="chat">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label">Chat</span>
+          <button type="button" class="sidebar-nav-item active" data-tab="home">
+            <span class="nav-icon">🏡</span>
+            <span class="nav-label" id="lbl-nav-home">Home</span>
             <span class="nav-active-pip"></span>
+          </button>
+          <button type="button" class="sidebar-nav-item" data-tab="chat">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label" id="lbl-nav-chat">AI Assistant</span>
           </button>
           <button type="button" class="sidebar-nav-item" data-tab="market">
             <span class="nav-icon">💰</span>
-            <span class="nav-label">Market</span>
+            <span class="nav-label" id="lbl-nav-market">Market</span>
           </button>
           <button type="button" class="sidebar-nav-item" data-tab="weather">
             <span class="nav-icon">🌦️</span>
-            <span class="nav-label">Weather</span>
+            <span class="nav-label" id="lbl-nav-weather">Weather</span>
           </button>
           <button type="button" class="sidebar-nav-item" data-tab="crops">
             <span class="nav-icon">🌱</span>
-            <span class="nav-label">My Crops</span>
+            <span class="nav-label" id="lbl-nav-crops">My Crops</span>
           </button>
           <button type="button" class="sidebar-nav-item" data-tab="profile">
             <span class="nav-icon">👤</span>
-            <span class="nav-label">Profile</span>
+            <span class="nav-label" id="lbl-nav-profile">Profile</span>
           </button>
           <button type="button" class="sidebar-nav-item sidebar-share-action" id="sidebar-mobile-share-btn" title="Open KisanMitra on your mobile phone">
             <span class="nav-icon">📱</span>
@@ -146,9 +150,271 @@
       <main class="main-viewport">
 
         <!-- ============================================== -->
-        <!-- VIEW 1: CHAT (PRIMARY / CHAT-FIRST DEFAULT)    -->
+        <!-- VIEW 0: HOME / LANDING & FARMER DASHBOARD      -->
         <!-- ============================================== -->
-        <section class="tab-view-pane active" id="view-chat">
+        <section class="tab-view-pane active" id="view-home">
+          <div class="home-layout-scroll">
+            
+            <!-- A. HERO SECTION: Sophisticated Split Layout -->
+            <div class="hero-split-section">
+              <!-- Left Column: Branding, Headline, Subtext, CTAs -->
+              <div class="hero-text-col">
+                <div class="hero-badge-pill" id="lbl-hero-badge">
+                  <span class="badge-dot"></span>
+                  <span>SMART FARMING • POWERED BY AI</span>
+                </div>
+                <h1 class="hero-main-title" id="lbl-hero-title">
+                  Grow Smarter.<br><span class="hero-highlight">Harvest Better.</span>
+                </h1>
+                <p class="hero-supporting-text" id="lbl-hero-subtitle">
+                  KisanMitra is your intelligent digital farming companion, delivering live APMC mandi rates, AI price forecasting, hyperlocal agro-weather, and plant health protection in your language.
+                </p>
+                <div class="hero-cta-group">
+                  <button type="button" class="hero-btn-primary" id="hero-explore-btn">
+                    <span class="btn-icon">🌾</span>
+                    <span id="lbl-hero-explore">Explore Your Farm</span>
+                  </button>
+                  <button type="button" class="hero-btn-secondary" id="hero-chat-btn">
+                    <span class="btn-icon">💬</span>
+                    <span id="lbl-hero-ask-ai">Ask AI Assistant</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right Column: Agricultural Artwork & Overlaid Live Floating Chips -->
+              <div class="hero-visual-col">
+                <div class="hero-art-canvas">
+                  <!-- Elegant Agricultural SVG Landscape -->
+                  <svg class="farm-landscape-svg" viewBox="0 0 600 420" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#EBF5EE"/>
+                        <stop offset="60%" stop-color="#FDFCF7"/>
+                        <stop offset="100%" stop-color="#F4EFE6"/>
+                      </linearGradient>
+                      <linearGradient id="hill1Grad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#2D6A4F"/>
+                        <stop offset="100%" stop-color="#1B4332"/>
+                      </linearGradient>
+                      <linearGradient id="hill2Grad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#40916C"/>
+                        <stop offset="100%" stop-color="#2D6A4F"/>
+                      </linearGradient>
+                      <linearGradient id="terraceGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#52B788"/>
+                        <stop offset="100%" stop-color="#40916C"/>
+                      </linearGradient>
+                      <linearGradient id="sunGlow" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#FBBF24"/>
+                        <stop offset="100%" stop-color="#F59E0B" stop-opacity="0.3"/>
+                      </linearGradient>
+                    </defs>
+                    <!-- Sky & Morning Sun Glow -->
+                    <rect width="600" height="420" fill="url(#skyGrad)"/>
+                    <circle cx="480" cy="90" r="60" fill="url(#sunGlow)"/>
+                    
+                    <!-- Background Mountains / Hills -->
+                    <path d="M-20,240 Q120,130 260,200 T540,160 Q580,180 620,220 L620,420 L-20,420 Z" fill="url(#hill1Grad)" opacity="0.35"/>
+                    <path d="M-20,270 Q160,180 340,240 T620,210 L620,420 L-20,420 Z" fill="url(#hill2Grad)" opacity="0.55"/>
+                    
+                    <!-- Lush Green Agricultural Terraces & Crop Rows -->
+                    <path d="M-20,310 Q140,260 300,290 T620,270 L620,420 L-20,420 Z" fill="url(#terraceGrad)" opacity="0.85"/>
+                    <path d="M-20,350 Q180,310 380,340 T620,320 L620,420 L-20,420 Z" fill="#1B4332"/>
+                    
+                    <!-- Stylized Crop Silhouettes & Terraced Patterns -->
+                    <g fill="#52B788" opacity="0.6">
+                      <path d="M80,335 C80,320 88,310 92,305 C96,310 104,320 104,335 Z"/>
+                      <path d="M120,340 C120,325 128,315 132,310 C136,315 144,325 144,340 Z"/>
+                      <path d="M160,345 C160,330 168,320 172,315 C176,320 184,330 184,345 Z"/>
+                      <path d="M420,350 C420,335 428,325 432,320 C436,325 444,335 444,350 Z"/>
+                      <path d="M460,355 C460,340 468,330 472,325 C476,330 484,340 484,355 Z"/>
+                    </g>
+                    <!-- Gentle Terraced Crop Field Lines -->
+                    <path d="M20,380 Q200,345 420,370 T620,360" stroke="#52B788" stroke-width="2" fill="none" opacity="0.4"/>
+                    <path d="M10,405 Q220,375 450,395 T620,390" stroke="#74C69D" stroke-width="2.5" fill="none" opacity="0.35"/>
+                  </svg>
+
+                  <!-- Floating Overlaid Live Chips -->
+                  <div class="floating-chip chip-weather" id="chip-live-weather">
+                    <div class="chip-icon-box">🌦️</div>
+                    <div class="chip-content">
+                      <div class="chip-title" id="lbl-chip-weather-title">Agro-Weather</div>
+                      <div class="chip-val" id="chip-weather-val">29°C • Spray Safe</div>
+                    </div>
+                  </div>
+
+                  <div class="floating-chip chip-crop" id="chip-live-crop">
+                    <div class="chip-icon-box">🌱</div>
+                    <div class="chip-content">
+                      <div class="chip-title" id="lbl-chip-crop-title">Crop Health</div>
+                      <div class="chip-val" id="chip-crop-val">Chilli 341 • Flowering</div>
+                    </div>
+                  </div>
+
+                  <div class="floating-chip chip-market" id="chip-live-market">
+                    <div class="chip-icon-box">📈</div>
+                    <div class="chip-content">
+                      <div class="chip-title" id="lbl-chip-market-title">Mandi Intelligence</div>
+                      <div class="chip-val" id="chip-market-val">₹22,100 • +2.7% Forecast</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- B. FARMER DASHBOARD -->
+            <div class="farmer-dashboard-container" id="farmer-dashboard">
+              
+              <!-- 1. Welcome Panel -->
+              <div class="dash-welcome-panel">
+                <div class="dash-welcome-left">
+                  <div class="dash-avatar-badge">👨‍🌾</div>
+                  <div class="dash-welcome-text">
+                    <div class="dash-greeting-row">
+                      <h2 class="dash-greeting" id="dash-greeting-text">Welcome to KisanMitra</h2>
+                      <span class="dash-date-badge" id="dash-date-badge">Today</span>
+                    </div>
+                    <div class="dash-location-row">
+                      <span class="dash-loc-pin">📍</span>
+                      <span class="dash-loc-text" id="dash-farm-location-text">Farm Location: Not set</span>
+                      <button type="button" class="dash-loc-edit-btn" id="dash-loc-change-btn">Change</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="dash-welcome-right">
+                  <div class="dash-priority-insight">
+                    <span class="insight-sparkle">💡</span>
+                    <span id="dash-priority-insight-text">Keep light drip moisture in flowering crops and monitor lower leaves for thrips.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Quick Action Grid -->
+              <div class="dash-section-header">
+                <h3 class="dash-section-title" id="lbl-dash-quick-actions">Quick Farm Actions</h3>
+                <span class="dash-section-tag">Instant Tools</span>
+              </div>
+              <div class="dash-quick-actions-grid">
+                <button type="button" class="dash-quick-action-card" data-action="chat" data-query="What should I do today?">
+                  <div class="quick-icon-wrap" style="background: rgba(45, 106, 79, 0.1); color: #2D6A4F;">💬</div>
+                  <div class="quick-info">
+                    <div class="quick-title">Ask AI Assistant</div>
+                    <div class="quick-desc">Farming advisory & daily guide</div>
+                  </div>
+                  <span class="quick-arrow">➔</span>
+                </button>
+
+                <button type="button" class="dash-quick-action-card" data-action="market">
+                  <div class="quick-icon-wrap" style="background: rgba(180, 83, 9, 0.1); color: #B45309;">💰</div>
+                  <div class="quick-info">
+                    <div class="quick-title">Live Mandi Rates</div>
+                    <div class="quick-desc">APMC benchmark rates & spread</div>
+                  </div>
+                  <span class="quick-arrow">➔</span>
+                </button>
+
+                <button type="button" class="dash-quick-action-card" data-action="forecast">
+                  <div class="quick-icon-wrap" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">📈</div>
+                  <div class="quick-info">
+                    <div class="quick-title">Price Forecast (AI)</div>
+                    <div class="quick-desc">7-Day trend & confidence bounds</div>
+                  </div>
+                  <span class="quick-arrow">➔</span>
+                </button>
+
+                <button type="button" class="dash-quick-action-card" data-action="weather">
+                  <div class="quick-icon-wrap" style="background: rgba(2, 132, 199, 0.1); color: #0284C7;">🌦️</div>
+                  <div class="quick-info">
+                    <div class="quick-title">Weather & Spraying</div>
+                    <div class="quick-desc">Rain chances & spray safety</div>
+                  </div>
+                  <span class="quick-arrow">➔</span>
+                </button>
+
+                <button type="button" class="dash-quick-action-card" data-action="crop_photo">
+                  <div class="quick-icon-wrap" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">📷</div>
+                  <div class="quick-info">
+                    <div class="quick-title">Check Crop Photo</div>
+                    <div class="quick-desc">Instant pest & disease diagnosis</div>
+                  </div>
+                  <span class="quick-arrow">➔</span>
+                </button>
+              </div>
+
+              <!-- 3. Unique Section: "Insights for Your Farm" -->
+              <div class="dash-insights-section">
+                <div class="dash-section-header">
+                  <div>
+                    <h3 class="dash-section-title" id="lbl-dash-insights-title">Insights for Your Farm</h3>
+                    <p class="dash-section-sub" id="lbl-dash-insights-sub">Real-time agronomic intelligence, market forecasts, and hyper-local weather alerts tailored to your farm.</p>
+                  </div>
+                  <span class="dash-badge-live">LIVE INTELLIGENCE</span>
+                </div>
+
+                <div class="dash-insights-grid">
+                  <!-- Insight 1: Daily Activity -->
+                  <div class="dash-insight-card card-activity">
+                    <div class="insight-header">
+                      <span class="insight-badge-icon">🌾</span>
+                      <span class="insight-kicker" id="lbl-insight-activity">Daily Farm Activity</span>
+                    </div>
+                    <h4 class="insight-card-title" id="dash-insight-activity-title">Nutrient & Moisture Management</h4>
+                    <p class="insight-card-body" id="dash-insight-activity-body">Maintain light, consistent irrigation during the flowering stage. Avoid water stagnation and prepare potassium nitrate foliar spray.</p>
+                    <div class="insight-card-footer">
+                      <span class="insight-tag">Growth Stage: Flowering</span>
+                    </div>
+                  </div>
+
+                  <!-- Insight 2: ML Market Forecast -->
+                  <div class="dash-insight-card card-forecast">
+                    <div class="insight-header">
+                      <span class="insight-badge-icon">📈</span>
+                      <span class="insight-kicker" id="lbl-insight-forecast">7-Day Price Forecast</span>
+                    </div>
+                    <h4 class="insight-card-title" id="dash-insight-forecast-title">Upward Mandi Momentum (+2.7%)</h4>
+                    <p class="insight-card-body" id="dash-insight-forecast-body">Our statistical Ridge regression model projects price appreciation over the next 7 days across regional APMC yards.</p>
+                    <div class="insight-card-footer">
+                      <span class="insight-tag tag-success">Model MAE: ₹98.75/Qtl</span>
+                      <button type="button" class="insight-link-btn" onclick="document.querySelector('[data-tab=market]').click()">View Mandis ➔</button>
+                    </div>
+                  </div>
+
+                  <!-- Insight 3: Weather Window -->
+                  <div class="dash-insight-card card-weather">
+                    <div class="insight-header">
+                      <span class="insight-badge-icon">🌦️</span>
+                      <span class="insight-kicker" id="lbl-insight-weather">Spray & Irrigation Window</span>
+                    </div>
+                    <h4 class="insight-card-title" id="dash-insight-weather-title">Morning Spray Recommended</h4>
+                    <p class="insight-card-body" id="dash-insight-weather-body">Favorable spray conditions between 7:00 AM and 11:00 AM. 30% rain likelihood later in the evening.</p>
+                    <div class="insight-card-footer">
+                      <span class="insight-tag">Wind: 12 km/h • Humidity: 72%</span>
+                    </div>
+                  </div>
+
+                  <!-- Insight 4: Plant Protection (IPM) -->
+                  <div class="dash-insight-card card-ipm">
+                    <div class="insight-header">
+                      <span class="insight-badge-icon">🌿</span>
+                      <span class="insight-kicker" id="lbl-insight-ipm">Plant Protection (IPM)</span>
+                    </div>
+                    <h4 class="insight-card-title" id="dash-insight-ipm-title">Sucking Pest & Thrips Monitoring</h4>
+                    <p class="insight-card-body" id="dash-insight-ipm-body">Inspect lower leaf surfaces for yellowing or curl. Install 10-15 blue/yellow sticky traps per acre for organic defense.</p>
+                    <div class="insight-card-footer">
+                      <button type="button" class="insight-link-btn" id="dash-ipm-photo-btn">Analyze Leaf Photo 📷</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /.farmer-dashboard-container -->
+          </div><!-- /.home-layout-scroll -->
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 1: CHAT (AI FARMING ASSISTANT)            -->
+        <!-- ============================================== -->
+        <section class="tab-view-pane" id="view-chat">
           <div class="chat-layout">
             
             <!-- Message Stream -->

@@ -117,6 +117,11 @@ class AgriculturalTools:
         return market_service.find_nearby_mandis(lat, lon, crop=crop, max_km=max_km)
 
     @staticmethod
+    def market_forecast(crop: str, variety: Optional[str] = None, market: Optional[str] = None, horizon: int = 7) -> Dict[str, Any]:
+        import market_service
+        return market_service.getMarketPriceForecast(crop=crop, variety=variety, market=market, days_ahead=horizon)
+
+    @staticmethod
     def crop_knowledge(crop: str, topic: Optional[str] = None) -> Dict[str, Any]:
         crop_name = crop.capitalize() if crop else "Chilli"
         advisories = {
@@ -1100,6 +1105,41 @@ The programmer replied: *"Because they had eggs!"* 😂"""
             res["detected_language"] = effective_lang
             return res
 
+        # B2. Price Forecast & Market Volatility Intent
+        is_price_forecast_query = any(k in q_lower or k in user_msg_clean for k in [
+            "price forecast", "rate forecast", "forecast price", "predict price", "future price",
+            "price prediction", "price trend", "price going up", "price going down",
+            "will price increase", "will price decrease", "will price rise", "will price fall",
+            "next week price", "price next week", "price tomorrow", "tomorrow price", "next 7 days price",
+            "dhara peruguthunda", "dhara taggutunda", "dhara anchana",
+            "ధర పెరుగుతుందా", "రేటు పెరుగుతుందా", "ధర తగ్గుతుందా", "ధర అంచనా", "రేపటి ధర", "వచ్చే వారం ధర", "రాబోయే ధర",
+            "భవిష్యత్తు ధర", "ధర పెరుగుతుందా తగ్గుతుందా",
+            "भाव बढ़ेगा", "दाम बढ़ेगा", "भाव घटेगा", "मूल्य पूर्वानुमान", "भाव का पूर्वानुमान", "कल का भाव क्या रहेगा", "अगले हफ्ते का भाव"
+        ]) or (
+            any(w in q_lower for w in ["forecast", "predict", "prediction", "future"])
+            and any(p in q_lower for p in ["price", "rate", "mandi", "modal", "chilli", "tomato", "cotton", "paddy"])
+        ) or (
+            any(w in q_lower for w in ["will", "increase", "decrease"])
+            and any(c in q_lower for c in ["chilli", "tomato", "cotton", "paddy", "341", "teja"])
+            and any(p in q_lower for p in ["price", "rate"])
+        ) or (
+            any(w in user_msg_clean for w in ["పెరుగుతుందా", "తగ్గుతుందా", "అంచనా"])
+            and any(c in user_msg_clean for c in ["ధర", "రేటు", "మిర్చి", "టమోటా", "పత్తి", "వరి", "341", "తేజ"])
+        ) or (
+            any(w in user_msg_clean for w in ["बढ़ेगा", "घटेगा", "पूर्वानुमान"])
+            and any(c in user_msg_clean for c in ["भाव", "दाम", "मिर्च", "टमाटर", "कपास", "धान"])
+        )
+
+        if is_price_forecast_query:
+            session.active_topic = "market_forecast"
+            target_crop = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else session.active_crop) or "Chilli"
+            session.active_crop = target_crop
+            session.active_variety = variety
+            forecast_data = AgriculturalTools.market_forecast(crop=target_crop, variety=variety, horizon=7)
+            res = cls._format_market_forecast_response(target_crop, variety, forecast_data, effective_lang, profile)
+            res["detected_language"] = effective_lang
+            return res
+
         # C. Market Query Intent
         is_market_query = any(k in q_lower or k in user_msg_clean for k in [
             "price", "rate", "mandi", "market", "highest", "lowest", "spread", "benchmark", "arrivals",
@@ -1108,10 +1148,14 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         ])
 
         # D. Weather Query Intent
-        is_weather_query = any(k in q_lower or k in user_msg_clean for k in [
-            "weather", "rain", "rainy", "forecast", "humidity", "spray", "wind", "temperature",
-            "వాతావరణం", "వర్షం", "తుఫాను", "గాలి", "తేమ", "పిచికారీ", "స్ప్రే", "मौसम", "बारिश", "तापमान", "हवा", "छिड़काव", "स्प्रे"
-        ]) and not any(k in q_lower or k in user_msg_clean for k in ["curl", "leaf", "pest", "disease", "ముడత", "మరోడ్"])
+        is_weather_query = (
+            any(k in q_lower or k in user_msg_clean for k in [
+                "weather", "rain", "rainy", "forecast", "humidity", "spray", "wind", "temperature",
+                "వాతావరణం", "వర్షం", "తుఫాను", "గాలి", "తేమ", "పిచికారీ", "స్ప్రే", "मौसम", "बारिश", "तापमान", "हवा", "छिड़काव", "स्प्रे"
+            ])
+            and not any(k in q_lower or k in user_msg_clean for k in ["curl", "leaf", "pest", "disease", "ముడత", "మరోడ్"])
+            and not is_price_forecast_query
+        )
 
         # E. Crop Health & Pest Advisory Intent
         is_crop_health_query = any(k in q_lower or k in user_msg_clean for k in [
@@ -1531,6 +1575,125 @@ The programmer replied: *"Because they had eggs!"* 😂"""
             "spoken_text": spoken,
             "tool_used": "nearby_mandis",
             "suggested_actions": ["💰 Best Rates Today", "🌦️ Weather Forecast", "🌱 Crop Advice"]
+        }
+
+    @classmethod
+    def _format_market_forecast_response(
+        cls,
+        crop: str,
+        variety: Optional[str],
+        forecast_res: Dict[str, Any],
+        lang: str,
+        profile: Any = None
+    ) -> Dict[str, Any]:
+        """
+        Format academic statistical time-series forecasting report
+        with multi-step trajectories, 95% confidence intervals, and farmer advisory.
+        """
+        var_str = f" ({variety})" if variety else ""
+        crop_te = cls.CROP_TE_MAP.get(crop, crop)
+        crop_hi = cls.CROP_HI_MAP.get(crop, crop)
+
+        current_price = forecast_res.get("current_modal_price", 0)
+        expected_change = forecast_res.get("expected_change", 0)
+        expected_change_pct = forecast_res.get("expected_change_pct", 0.0)
+        overall_trend = forecast_res.get("overall_trend", "stable")
+        advisory_map = forecast_res.get("advisory", {})
+        series = forecast_res.get("forecast_series", [])
+        meta = forecast_res.get("model_metadata", {})
+        metrics = meta.get("evaluation_metrics", {})
+
+        mae = metrics.get("mae", 0)
+        mape = metrics.get("mape_pct", 0)
+        dir_acc = metrics.get("directional_accuracy_pct", 0)
+        val_method = metrics.get("validation_method", "Walk-Forward Rolling Cross-Validation")
+
+        # Build forecast trajectory table
+        table_rows = []
+        for step in series:
+            s_label = step.get("horizon_label", "")
+            s_date = step.get("date", "")
+            s_price = step.get("predicted_modal_price", 0)
+            s_low = step.get("lower_bound_95", 0)
+            s_high = step.get("upper_bound_95", 0)
+            pct_val = step.get("change_pct", 0)
+            sign_str = "+" if pct_val > 0 else ""
+            s_trend = f"📈 {sign_str}{pct_val}%" if pct_val > 0 else (f"📉 {pct_val}%" if pct_val < 0 else "⚖️ 0.0%")
+            table_rows.append(f"| {s_date} ({s_label}) | **₹{s_price:,}** | ₹{s_low:,} – ₹{s_high:,} | {s_trend} |")
+
+        table = "\n".join(table_rows)
+        sign = "+" if expected_change >= 0 else ""
+        chg_str = f"{sign}₹{expected_change:,} ({sign}{expected_change_pct}%)"
+
+        if lang == "te":
+            trend_te = "ధర పెరుగుదల (Bullish 📈)" if overall_trend == "bullish" else ("ధర తగ్గుదల (Bearish 📉)" if overall_trend == "bearish" else "స్థిరమైన ధర (Stable ⚖️)")
+            reply = f"""### 📈 **{crop_te}{var_str}** 7 రోజుల APMC మార్కెట్ ధరల అంచనా (AI Mandi Forecast)
+
+📍 **ప్రస్తుత మోడల్ ధర:** ₹{current_price:,} / క్వింటాల్ | **అంచనా ధోరణి:** **{trend_te}** ({chg_str})
+
+| తేదీ (వ్యవధి) | అంచనా మోడల్ ధర | 95% విశ్వసనీయ పరిధి | మార్పు |
+| :--- | :--- | :--- | :--- |
+{table}
+
+💡 **వ్యవసాయ సిఫార్సు:**
+{advisory_map.get('te', advisory_map.get('en', ''))}
+
+🔬 **మోడల్ నిర్ధారణ & మూల్యాంకనం (Academic AI Validation):**
+- **అల్గోరిథం:** Regularized Auto-Regressive Ridge Linear Regression ($L_2$ Regularization)
+- **క్రాస్-వ్యాలిడేషన్:** {val_method}
+- **Mean Absolute Error (MAE):** ₹{mae} / క్వింటాల్ | **MAPE:** {mape}% | **ట్రెండ్ ఖచ్చితత్వం:** {dir_acc}%"""
+
+            end_p = series[-1]["predicted_modal_price"] if series else current_price
+            spoken = f"AI మోడల్ విశ్లేషణ ప్రకారం, రాబోయే 7 రోజుల్లో {crop_te}{var_str} ధర క్వింటాల్‌కు ₹{end_p:,} వరకు ఉండే అవకాశం ఉంది. వ్యవసాయ సలహా ప్రకారం తగిన సమయంలో మార్కెట్‌కు తీసుకెళ్లండి."
+
+        elif lang == "hi":
+            trend_hi = "भाव में बढ़त (Bullish 📈)" if overall_trend == "bullish" else ("भाव में गिरावट (Bearish 📉)" if overall_trend == "bearish" else "भाव स्थिर (Stable ⚖️)")
+            reply = f"""### 📈 **{crop_hi}{var_str}** 7-दिवसीय APMC मंडी भाव पूर्वानुमान (AI Mandi Forecast)
+
+📍 **वर्तमान मोडल भाव:** ₹{current_price:,} / क्विंटल | **अनुमानित रुझान:** **{trend_hi}** ({chg_str})
+
+| तिथि (अवधि) | अनुमानित मोडल भाव | 95% विश्वास अंतराल | अनुमानित बदलाव |
+| :--- | :--- | :--- | :--- |
+{table}
+
+💡 **कृषि विपणन सलाह:**
+{advisory_map.get('hi', advisory_map.get('en', ''))}
+
+🔬 **मॉडल सत्यापन एवं मूल्यांकन (Academic AI Validation):**
+- **एल्गोरिदम:** Regularized Auto-Regressive Ridge Linear Regression ($L_2$)
+- **सत्यापन विधि:** {val_method}
+- **Mean Absolute Error (MAE):** ₹{mae} / क्विंटल | **MAPE:** {mape}% | **दिशात्मक सटीकता:** {dir_acc}%"""
+
+            end_p = series[-1]["predicted_modal_price"] if series else current_price
+            spoken = f"पूर्वानुमान मॉडल के अनुसार अगले 7 दिनों में {crop_hi}{var_str} का भाव ₹{end_p:,} प्रति क्विंटल तक पहुंचने का अनुमान है। उपयुक्त समय पर फसल मंडी भेजें।"
+
+        else:
+            trend_en = "Upward / Bullish 📈" if overall_trend == "bullish" else ("Downward / Bearish 📉" if overall_trend == "bearish" else "Consolidating / Stable ⚖️")
+            reply = f"""### 📈 **{crop}{var_str}** 7-Day APMC Mandi Price Forecast & Market Volatility Engine
+
+📍 **Current Modal Benchmark:** ₹{current_price:,} / Quintal | **Projected Trajectory:** **{trend_en}** ({chg_str})
+
+| Target Date | Predicted Modal Price | 95% Confidence Interval | Projected Trend |
+| :--- | :--- | :--- | :--- |
+{table}
+
+💡 **Actionable Dispatch Advisory:**
+{advisory_map.get('en', '')}
+
+🔬 **Academic AI Model Validation Metrics:**
+- **Model Architecture:** Regularized Auto-Regressive Ridge Regression ($L_2$ Regularization)
+- **Validation Protocol:** {val_method}
+- **Mean Absolute Error (MAE):** ₹{mae} / Quintal | **MAPE:** {mape}% | **Directional Accuracy:** {dir_acc}%"""
+
+            end_p = series[-1]["predicted_modal_price"] if series else current_price
+            spoken = f"According to our forecasting model, {crop}{var_str} modal price is projected to reach ₹{end_p:,} per quintal over the next 7 days."
+
+        return {
+            "reply": reply,
+            "spoken_text": spoken,
+            "tool_used": "market_price_forecast",
+            "forecast_data": forecast_res,
+            "suggested_actions": ["💰 Current Spot Rates", "📊 Compare Mandis", "🌦️ Today's Weather"]
         }
 
     @classmethod

@@ -763,11 +763,43 @@ class MarketService:
                 })
         return sorted(summary, key=lambda x: -x["modal_price"])
 
+    @classmethod
+    def get_market_price_forecast(
+        cls,
+        crop: str = "Chilli",
+        variety: Optional[str] = None,
+        market: Optional[str] = None,
+        days_ahead: int = 7
+    ) -> Dict[str, Any]:
+        """
+        Produce a statistical machine learning time-series forecast for modal price.
+        Extracts verified historical APMC series and executes the regularized AR forecaster.
+        """
+        from market_forecaster import generate_market_forecast
+
+        hist_res = cls.get_market_price_history(crop=crop, variety=variety, range_key="7D")
+        series = hist_res.get("7D", []) if isinstance(hist_res, dict) else []
+
+        if not market:
+            latest = cls.get_latest_market_prices(crop=crop, variety=variety)
+            records = latest.get("data", []) if isinstance(latest, dict) else (latest if isinstance(latest, list) else [])
+            if records:
+                market = records[0].get("market")
+
+        return generate_market_forecast(
+            crop=crop,
+            variety=variety,
+            market=market,
+            historical_series=series,
+            horizon_days=days_ahead
+        )
+
 
 # Convenience exports matching prompt specification
 getLatestMarketPrices = MarketService.get_latest_market_prices
 getMarketPricesByDate = MarketService.get_market_prices_by_date
 getMarketPriceHistory = MarketService.get_market_price_history
+getMarketPriceForecast = MarketService.get_market_price_forecast
 getHighestPriceMarket = MarketService.get_highest_price_market
 getLowestPriceMarket = MarketService.get_lowest_price_market
 compareMarketPrices = MarketService.compare_market_prices

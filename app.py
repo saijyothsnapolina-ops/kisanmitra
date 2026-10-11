@@ -872,6 +872,26 @@ def get_history_market_endpoint(
 ):
     return market_service.getMarketPriceHistory(crop=crop or "Chilli", variety=variety, range_key=range)
 
+@app.get("/api/market/forecast")
+def get_forecast_market_endpoint(
+    crop: Optional[str] = "Chilli",
+    variety: Optional[str] = None,
+    market: Optional[str] = None,
+    horizon: int = 7
+):
+    """
+    Statistical ML APMC Mandi Price Forecasting Endpoint.
+    Returns recursive multi-step forecasts with 95% confidence bounds,
+    trend classification, and walk-forward cross-validation metrics.
+    """
+    safe_horizon = max(1, min(30, horizon)) if horizon > 0 else 7
+    return market_service.getMarketPriceForecast(
+        crop=crop or "Chilli",
+        variety=variety,
+        market=market,
+        days_ahead=safe_horizon
+    )
+
 @app.get("/api/weather")
 def get_weather(location: Optional[str] = None):
     loc_key = "default"

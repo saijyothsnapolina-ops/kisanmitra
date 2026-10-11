@@ -14,27 +14,33 @@
    Design Tokens: Light & Dark Modes
    ============================================================== */
 :root {
-  /* LIGHT MODE (Default) */
-  --color-bg-body: #fbfaf6; /* Natural warm off-white */
+  /* LIGHT MODE — Modern Indian Agricultural Identity */
+  --color-bg-body: #f8f7f2; /* Natural warm off-white canvas */
   --color-surface: #ffffff;
-  --color-surface-subtle: #f5f4ed;
+  --color-surface-subtle: #f2efe4; /* Warm field stone */
   --color-surface-elevated: #ffffff;
 
-  --color-forest: #14532d; /* Deep agricultural green */
-  --color-forest-hover: #0d381e;
-  --color-forest-subtle: #e9f5ee;
+  --color-forest: #1b4332; /* Deep agricultural foliage green */
+  --color-forest-deep: #143527;
+  --color-forest-hover: #143527;
+  --color-forest-light: #2d6a4f;
+  --color-forest-subtle: #ebf5ee; /* Soft sage mist */
   --color-forest-text: #ffffff;
 
-  --color-wheat: #b45309; /* Warm earthy beige / amber */
+  --color-sage: #52b788;
+  --color-leaf: #2d6a4f;
+  --color-wheat: #b45309; /* Warm golden harvest / soil amber */
   --color-wheat-subtle: #fef3c7;
+  --color-soil: #8c531d;
+  --color-soil-subtle: #fcf6ef;
 
-  --color-ink-main: #142318; /* Deep charcoal text */
-  --color-ink-muted: #495e50;
-  --color-ink-subtle: #7e9485;
+  --color-ink-main: #132218; /* Deep earthy charcoal (no harsh pitch black) */
+  --color-ink-muted: #415548;
+  --color-ink-subtle: #6e8476;
 
-  --color-border: #e3ded5;
-  --color-border-hover: #c9c3b8;
-  --color-border-focus: #14532d;
+  --color-border: #ded8cb; /* Warm organic border */
+  --color-border-hover: #c4bcae;
+  --color-border-focus: #1b4332;
 
   --color-success: #15803d;
   --color-success-bg: #dcfce7;
@@ -43,9 +49,12 @@
   --color-danger: #b91c1c;
   --color-danger-bg: #fee2e2;
 
-  --shadow-sm: 0 1px 2px 0 rgba(20, 35, 24, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(20, 35, 24, 0.06), 0 2px 4px -2px rgba(20, 35, 24, 0.04);
-  --shadow-modal: 0 20px 25px -5px rgba(20, 35, 24, 0.14), 0 8px 10px -6px rgba(20, 35, 24, 0.08);
+  --shadow-sm: 0 1px 2px 0 rgba(20, 35, 24, 0.04);
+  --shadow-subtle: 0 1px 3px rgba(20, 35, 24, 0.04), 0 1px 2px rgba(20, 35, 24, 0.03);
+  --shadow-md: 0 4px 10px -2px rgba(20, 35, 24, 0.06), 0 2px 4px -2px rgba(20, 35, 24, 0.03);
+  --shadow-card: 0 4px 12px -2px rgba(20, 35, 24, 0.05), 0 2px 6px -1px rgba(20, 35, 24, 0.03);
+  --shadow-elevated: 0 12px 24px -4px rgba(20, 35, 24, 0.08), 0 4px 8px -2px rgba(20, 35, 24, 0.04);
+  --shadow-modal: 0 20px 30px -8px rgba(20, 35, 24, 0.16), 0 8px 12px -6px rgba(20, 35, 24, 0.08);
 
   --font-serif: 'Lora', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -54,31 +63,44 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 150ms var(--ease-out);
+  --transition-base: 250ms var(--ease-out);
+  --transition-page: 320ms var(--ease-out);
 }
 
-/* DARK MODE (Intentionally crafted earthy charcoal & forest green) */
+/* DARK MODE — Nocturnal Forest & Fertile Earth (Intentionally Crafted, Not Pure Black) */
 [data-theme="dark"] {
-  --color-bg-body: #111713; /* Deep earthy charcoal (no pure black) */
-  --color-surface: #18221c; /* Dark forest green / slate */
-  --color-surface-subtle: #202d25;
-  --color-surface-elevated: #233229;
+  --color-bg-body: #0d1510; /* Deep fertile forest floor */
+  --color-surface: #141f17; /* Dense evergreen slate */
+  --color-surface-subtle: #1c2b20; /* Deep foliage */
+  --color-surface-elevated: #233528;
 
-  --color-forest: #22c55e; /* Vibrant yet balanced agricultural leaf */
-  --color-forest-hover: #16a34a;
-  --color-forest-subtle: #193322;
-  --color-forest-text: #0b2914;
+  --color-forest: #34d399; /* Radiant agricultural leaf green */
+  --color-forest-deep: #10b981;
+  --color-forest-hover: #10b981;
+  --color-forest-light: #6ee7b7;
+  --color-forest-subtle: #13281c;
+  --color-forest-text: #082312;
 
-  --color-wheat: #f59e0b;
-  --color-wheat-subtle: #332308;
+  --color-sage: #6ee7b7;
+  --color-leaf: #34d399;
+  --color-wheat: #fbbf24;
+  --color-wheat-subtle: #2d1f06;
+  --color-soil: #d97706;
+  --color-soil-subtle: #26180a;
 
-  --color-ink-main: #f3f5f3; /* Warm white text */
-  --color-ink-muted: #9eb1a4;
-  --color-ink-subtle: #6c8273;
+  --color-ink-main: #f0f4f1; /* Warm off-white / parchment text */
+  --color-ink-muted: #95a89b;
+  --color-ink-subtle: #6c8072;
 
-  --color-border: #28372d;
-  --color-border-hover: #3a4e40;
-  --color-border-focus: #22c55e;
+  --color-border: #233527;
+  --color-border-hover: #364e3c;
+  --color-border-focus: #34d399;
 
   --color-success: #4ade80;
   --color-success-bg: #14351f;
@@ -87,9 +109,12 @@
   --color-danger: #f87171;
   --color-danger-bg: #361515;
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 12px 24px -4px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 20px 30px -8px rgba(0, 0, 0, 0.75);
 }
 
 /* Base Setup */
@@ -4688,6 +4713,748 @@ a {
   margin-top: 1px;
 }
 
+/* ==============================================================
+   View 0: Home / Landing & Farmer Dashboard (AgriTech Experience)
+   ============================================================== */
+#view-home {
+  overflow: hidden;
+}
 
+.home-layout-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 28px 32px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
 
+/* A. Hero Split Layout */
+.hero-split-section {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 36px;
+  align-items: center;
+  padding: 12px 0 20px;
+  min-height: 440px;
+}
 
+.hero-text-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  max-width: 620px;
+}
+
+.hero-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background-color: var(--color-forest-subtle);
+  border: 1px solid rgba(45, 106, 79, 0.2);
+  border-radius: var(--radius-full);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--color-forest);
+  text-transform: uppercase;
+}
+
+.hero-badge-pill .badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-sage);
+  box-shadow: 0 0 8px var(--color-sage);
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+.hero-main-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 3.8vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--color-ink-main);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.hero-main-title .hero-highlight {
+  color: var(--color-leaf);
+  background: linear-gradient(135deg, var(--color-forest) 0%, var(--color-sage) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.hero-supporting-text {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--color-ink-muted);
+  margin: 0;
+  max-width: 540px;
+}
+
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.hero-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 26px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14.5px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 14px rgba(27, 67, 50, 0.25);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: manipulation;
+}
+
+.hero-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(27, 67, 50, 0.35);
+  background: linear-gradient(135deg, #143527 0%, #245741 100%);
+}
+
+.hero-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 24px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-ink-main);
+  font-weight: 600;
+  font-size: 14.5px;
+  border: 1.5px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: manipulation;
+}
+
+.hero-btn-secondary:hover {
+  border-color: var(--color-forest);
+  color: var(--color-forest);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  background: var(--color-surface-subtle);
+}
+
+/* Hero Artwork & Live Floating Chips */
+.hero-visual-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 18px 10px;
+}
+
+.hero-art-canvas {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 600 / 420;
+  border-radius: 24px;
+}
+
+.farm-landscape-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 24px;
+  box-shadow: 0 16px 36px -12px rgba(20, 35, 24, 0.12);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.floating-chip {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 14px;
+  box-shadow: 0 10px 25px -4px rgba(20, 35, 24, 0.12), 0 4px 10px -2px rgba(20, 35, 24, 0.06);
+  z-index: 10;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  user-select: none;
+}
+
+.floating-chip:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 14px 30px -4px rgba(20, 35, 24, 0.18);
+}
+
+.chip-weather {
+  top: -12px;
+  left: -12px;
+  animation: floatWeather 6s ease-in-out infinite;
+}
+
+.chip-market {
+  top: 26%;
+  right: -18px;
+  animation: floatMarket 7s ease-in-out infinite 1s;
+}
+
+.chip-crop {
+  bottom: -14px;
+  left: 15%;
+  animation: floatCrop 6.5s ease-in-out infinite 0.5s;
+}
+
+.chip-icon-box {
+  font-size: 20px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(235, 245, 238, 0.85);
+  flex-shrink: 0;
+}
+
+.chip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chip-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--color-ink-muted);
+}
+
+.chip-val {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  white-space: nowrap;
+}
+
+@keyframes floatWeather {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes floatMarket {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(7px); }
+}
+
+@keyframes floatCrop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* B. Farmer Dashboard Container */
+.farmer-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 8px;
+}
+
+/* 1. Welcome Panel */
+.dash-welcome-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.dash-welcome-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.dash-avatar-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--color-forest-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  border: 1px solid rgba(45, 106, 79, 0.15);
+  flex-shrink: 0;
+}
+
+.dash-welcome-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dash-greeting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dash-greeting {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  margin: 0;
+}
+
+.dash-date-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--color-surface-subtle);
+  color: var(--color-ink-muted);
+  border: 1px solid var(--color-border);
+}
+
+.dash-location-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--color-ink-muted);
+}
+
+.dash-loc-pin {
+  font-size: 14px;
+}
+
+.dash-loc-edit-btn {
+  background: none;
+  border: none;
+  color: var(--color-forest);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 2px 4px;
+}
+
+.dash-welcome-right {
+  max-width: 440px;
+}
+
+.dash-priority-insight {
+  background: var(--color-wheat-subtle);
+  border: 1px solid rgba(180, 83, 9, 0.2);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  font-size: 13px;
+  color: var(--color-ink-main);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.insight-sparkle {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* 2. Section Headers */
+.dash-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 16px;
+}
+
+.dash-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  margin: 0;
+}
+
+.dash-section-sub {
+  font-size: 13.5px;
+  color: var(--color-ink-muted);
+  margin: 4px 0 0 0;
+  max-width: 650px;
+  line-height: 1.5;
+}
+
+.dash-section-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-subtle);
+  color: var(--color-ink-muted);
+  border: 1px solid var(--color-border);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dash-badge-live {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid rgba(21, 128, 61, 0.2);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* 3. Quick Actions Grid */
+.dash-quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.dash-quick-action-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  touch-action: manipulation;
+}
+
+.dash-quick-action-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-forest);
+  box-shadow: var(--shadow-md);
+  background: var(--color-surface);
+}
+
+.dash-quick-action-card:active {
+  transform: scale(0.98);
+}
+
+.dash-quick-action-card .quick-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.dash-quick-action-card .quick-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-quick-action-card .quick-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-ink-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-quick-action-card .quick-desc {
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-quick-action-card .quick-arrow {
+  font-size: 14px;
+  color: var(--color-ink-subtle);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.dash-quick-action-card:hover .quick-arrow {
+  transform: translateX(3px);
+  color: var(--color-forest);
+}
+
+/* 4. "Insights for Your Farm" Grid */
+.dash-insights-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dash-insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.dash-insight-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-insight-card.card-activity {
+  border-top: 3.5px solid #2d6a4f;
+}
+
+.dash-insight-card.card-forecast {
+  border-top: 3.5px solid #b45309;
+}
+
+.dash-insight-card.card-weather {
+  border-top: 3.5px solid #0284c7;
+}
+
+.dash-insight-card.card-ipm {
+  border-top: 3.5px solid #8b5cf6;
+}
+
+.dash-insight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-hover);
+}
+
+.dash-insight-card .insight-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-insight-card .insight-badge-icon {
+  font-size: 18px;
+}
+
+.dash-insight-card .insight-kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--color-ink-muted);
+}
+
+.dash-insight-card .insight-card-title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.dash-insight-card .insight-card-body {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-ink-muted);
+  margin: 0;
+  flex: 1;
+}
+
+.dash-insight-card .insight-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.dash-insight-card .insight-tag {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-subtle);
+  color: var(--color-ink-muted);
+  border: 1px solid var(--color-border);
+}
+
+.dash-insight-card .insight-tag.tag-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: rgba(21, 128, 61, 0.2);
+}
+
+.dash-insight-card .insight-link-btn {
+  background: none;
+  border: none;
+  color: var(--color-forest);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+  transition: color 0.15s ease;
+}
+
+.dash-insight-card .insight-link-btn:hover {
+  color: var(--color-leaf);
+  text-decoration: underline;
+}
+
+/* Dark Theme Adjustments for Home & Dashboard */
+[data-theme="dark"] .floating-chip {
+  background: rgba(20, 31, 23, 0.88);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .floating-chip .chip-icon-box {
+  background: rgba(28, 43, 32, 0.9);
+}
+
+[data-theme="dark"] .dash-priority-insight {
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.2);
+  color: var(--color-ink-main);
+}
+
+[data-theme="dark"] .hero-btn-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #062413;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .hero-btn-primary:hover {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 980px) {
+  .hero-split-section {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: left;
+  }
+
+  .hero-visual-col {
+    order: -1;
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .dash-welcome-panel {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dash-welcome-right {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-layout-scroll {
+    padding: 16px 16px 44px;
+    gap: 24px;
+  }
+
+  .hero-main-title {
+    font-size: 2.15rem;
+  }
+
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-btn-primary,
+  .hero-btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .floating-chip {
+    padding: 8px 12px;
+  }
+
+  .chip-weather {
+    top: -8px;
+    left: -6px;
+  }
+
+  .chip-market {
+    top: 20%;
+    right: -8px;
+  }
+
+  .chip-crop {
+    bottom: -8px;
+    left: 10%;
+  }
+
+  .dash-quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-insights-grid {
+    grid-template-columns: 1fr;
+  }
+}
