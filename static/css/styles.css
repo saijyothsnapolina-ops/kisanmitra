@@ -5458,3 +5458,406 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==============================================================
+   CLEAN FARMER HOME INTERFACE (5-Second Clarity & Touch Design)
+   ============================================================== */
+
+.farmer-welcome-hero {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.farmer-welcome-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.farmer-avatar-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  background: var(--color-forest-subtle);
+  border: 1px solid rgba(45, 106, 79, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.85rem;
+  flex-shrink: 0;
+}
+
+.farmer-welcome-headings {
+  flex: 1;
+  min-width: 220px;
+}
+
+.farmer-main-greeting {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.farmer-sub-greeting {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  margin: 4px 0 0 0;
+}
+
+.farmer-today-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-ink-main);
+}
+
+.status-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.2);
+  animation: pulse-ring 2.5s infinite;
+}
+
+.farmer-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.farmer-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.farmer-meta-chip.meta-loc {
+  background: var(--color-forest-subtle);
+  border: 1px solid rgba(45, 106, 79, 0.18);
+  color: var(--color-forest);
+  font-weight: 600;
+}
+
+.farmer-meta-chip.meta-tip {
+  background: var(--color-wheat-subtle);
+  border: 1px solid rgba(180, 83, 9, 0.2);
+  color: var(--color-wheat);
+  font-weight: 500;
+  flex: 1;
+}
+
+/* 4 Primary Action Buttons Section */
+.primary-actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actions-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.actions-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  margin: 0;
+}
+
+.actions-section-tag {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-ink-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.farmer-primary-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.primary-action-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 20px 24px;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  touch-action: manipulation;
+  min-height: 104px;
+  width: 100%;
+}
+
+.primary-action-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-forest);
+  box-shadow: var(--shadow-card);
+}
+
+.primary-action-card:active {
+  transform: translateY(0);
+}
+
+.action-card-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex: 1;
+}
+
+.action-card-icon-halo {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.95rem;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.primary-action-card:hover .action-card-icon-halo {
+  transform: scale(1.06);
+}
+
+.icon-chat {
+  background: rgba(45, 106, 79, 0.12);
+  color: #1b4332;
+}
+
+.icon-market {
+  background: rgba(180, 83, 9, 0.12);
+  color: #b45309;
+}
+
+.icon-weather {
+  background: rgba(2, 132, 199, 0.12);
+  color: #0284c7;
+}
+
+.icon-health {
+  background: rgba(82, 183, 136, 0.16);
+  color: #2d6a4f;
+}
+
+.action-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.action-card-title {
+  font-size: 1.22rem;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.action-card-desc {
+  font-size: 0.94rem;
+  color: var(--color-ink-muted);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.action-card-arrow-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink-muted);
+  font-size: 1rem;
+  margin-left: 12px;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.primary-action-card:hover .action-card-arrow-circle {
+  background: var(--color-forest);
+  border-color: var(--color-forest);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+/* Secondary Tools Strip */
+.secondary-tools-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.secondary-heading {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  margin: 0;
+}
+
+.secondary-tools-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.secondary-tool-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+  touch-action: manipulation;
+  box-shadow: var(--shadow-sm);
+}
+
+.secondary-tool-card:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-surface-subtle);
+  transform: translateY(-1px);
+}
+
+.secondary-tool-card .tool-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.secondary-tool-card .tool-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.secondary-tool-card .tool-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--color-ink-main);
+}
+
+.secondary-tool-card .tool-desc {
+  font-size: 0.84rem;
+  color: var(--color-ink-subtle);
+}
+
+/* Suggested Question Pills (Chat View) */
+.suggested-questions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 18px 0 14px 0;
+  width: 100%;
+}
+
+.suggested-pills-label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-forest);
+  letter-spacing: 0.2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.suggested-pills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.suggested-question-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-ink-main);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.suggested-question-pill:hover {
+  background: var(--color-forest-subtle);
+  border-color: var(--color-forest);
+  color: var(--color-forest);
+  transform: translateY(-1px);
+}
+
+.suggested-question-pill:active {
+  transform: scale(0.98);
+}
+
+.suggested-question-pill .pill-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .farmer-primary-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .secondary-tools-strip {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .farmer-meta-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .farmer-meta-chip.meta-tip {
+    width: 100%;
+  }
+}
+

@@ -607,10 +607,28 @@ function attachEventListeners() {
           navigateToView('weather');
         } else if (action === 'crop_photo') {
           openPhotoOptionsModal();
+        } else if (action === 'crop_health') {
+          navigateToView('chat');
+          const cropName = (state.profile && state.profile.crops && state.profile.crops[0]) || 'Chilli';
+          const q = state.lang === 'te' ? `${cropName} పంట సంరక్షణ మరియు తెగుళ్ల నివారణ సలహా ఇవ్వండి` : (state.lang === 'hi' ? `${cropName} फसल सुरक्षा एवं रोग नियंत्रण परामर्श दें` : `Crop protection and disease remedies for ${cropName}`);
+          handleInteraction({ text: q, image: null, action: 'crop_health' });
+        } else if (action === 'profile') {
+          navigateToView('profile');
         }
       });
     });
   }
+
+  // 5 Real Suggested Question Pills
+  document.querySelectorAll('.suggested-question-pill').forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      e.preventDefault();
+      const query = pill.getAttribute('data-query');
+      if (query) {
+        handleInteraction({ text: query, image: null, action: 'suggested_pill' });
+      }
+    });
+  });
 }
 
 // -------------------------------------------------------------
@@ -815,35 +833,44 @@ function updateChatbotAutomationGreeting() {
   if (greetingEl) {
     if (farmerName) {
       if (lang === 'te') {
-        greetingEl.textContent = `నమస్కారం ${farmerName} గారు! 🙏`;
+        greetingEl.textContent = `నమస్కారం ${farmerName} గారు! ఈరోజు మీ వ్యవసాయంలో ఎలా సహాయపడగలను?`;
       } else if (lang === 'hi') {
-        greetingEl.textContent = `नमस्ते ${farmerName} जी! 🙏`;
+        greetingEl.textContent = `नमस्ते ${farmerName} जी! आज आपकी खेती में मैं कैसे मदद कर सकता हूँ?`;
       } else {
-        greetingEl.textContent = `Welcome, ${farmerName}! 🙏`;
+        greetingEl.textContent = `Namaste ${farmerName}! How can I help with your farming today?`;
       }
     } else {
-      greetingEl.textContent = t.welcomeTitle || 'Welcome to KisanMitra';
+      greetingEl.textContent = t.chatGreeting || 'Namaste! How can I help with your farming today?';
     }
   }
 
   // 3. Greeting Subtitle / Description
   const descEl = document.querySelector('.companion-description');
   if (descEl) {
-    if (crop) {
-      if (lang === 'te') {
-        const locPart = farmLocShort ? `మీ ${farmLocShort} లోని ` : 'మీ ';
-        descEl.textContent = `${locPart}${localizedCrop}${varietyStr} తోట సమాచారం కొరకు కిసాన్ మిత్ర సిద్ధంగా ఉంది.`;
-      } else if (lang === 'hi') {
-        const locPart = farmLocShort ? `आपके ${farmLocShort} स्थित ` : 'आपके ';
-        descEl.textContent = `${locPart}${localizedCrop}${varietyStr} खेत के लिए समर्पित स्मार्ट कृषि साथी।`;
-      } else {
-        const locPart = farmLocShort ? ` in ${farmLocShort}` : '';
-        descEl.textContent = `Tailored for your ${crop}${varietyStr} farm${locPart}. Ask about prices, weather, and crop health.`;
-      }
-    } else {
-      descEl.textContent = t.welcomeSubtitle || 'Ask about your crop, market prices, weather or farming.';
-    }
+    descEl.textContent = t.chatSubtitle || 'Tap any suggested question below or type/speak your own question:';
   }
+
+  // 3b. Suggested Question Pills
+  const lblPillsTitle = document.getElementById('lbl-suggested-pills-title');
+  if (lblPillsTitle && t.suggestedPillsTitle) lblPillsTitle.textContent = t.suggestedPillsTitle;
+
+  const pillDefs = [
+    { id: 'lbl-pill-1', key: 'pill1' },
+    { id: 'lbl-pill-2', key: 'pill2' },
+    { id: 'lbl-pill-3', key: 'pill3' },
+    { id: 'lbl-pill-4', key: 'pill4' },
+    { id: 'lbl-pill-5', key: 'pill5' }
+  ];
+  pillDefs.forEach(p => {
+    const el = document.getElementById(p.id);
+    if (el && t[p.key]) {
+      el.textContent = t[p.key];
+      const parentBtn = el.closest('.suggested-question-pill');
+      if (parentBtn) {
+        parentBtn.setAttribute('data-query', t[p.key]);
+      }
+    }
+  });
 
   // 4. Quick Actions Heading
   const qaHeading = document.querySelector('.quick-actions-heading');
@@ -1262,6 +1289,51 @@ function setLanguage(lang) {
   const lblInsightIpm = document.getElementById('lbl-insight-ipm');
   if (lblInsightIpm && t.insightPestManagement) lblInsightIpm.textContent = t.insightPestManagement;
 
+  // Farmer Home Screen (5-Second Clarity)
+  const lblHomeSub = document.getElementById('lbl-home-subtitle');
+  if (lblHomeSub && t.homeWelcomeSubtitle) lblHomeSub.textContent = t.homeWelcomeSubtitle;
+  const lblHomeActionsTitle = document.getElementById('lbl-home-actions-title');
+  if (lblHomeActionsTitle && t.homeActionsTitle) lblHomeActionsTitle.textContent = t.homeActionsTitle;
+  const lblHomeActionsTag = document.getElementById('lbl-home-actions-tag');
+  if (lblHomeActionsTag && t.homeActionsTag) lblHomeActionsTag.textContent = t.homeActionsTag;
+
+  // 4 Primary Action Cards
+  const lblActChatTitle = document.getElementById('lbl-act-chat-title');
+  if (lblActChatTitle && t.actChatTitle) lblActChatTitle.textContent = t.actChatTitle;
+  const lblActChatDesc = document.getElementById('lbl-act-chat-desc');
+  if (lblActChatDesc && t.actChatDesc) lblActChatDesc.textContent = t.actChatDesc;
+
+  const lblActMktTitle = document.getElementById('lbl-act-market-title');
+  if (lblActMktTitle && t.actMarketTitle) lblActMktTitle.textContent = t.actMarketTitle;
+  const lblActMktDesc = document.getElementById('lbl-act-market-desc');
+  if (lblActMktDesc && t.actMarketDesc) lblActMktDesc.textContent = t.actMarketDesc;
+
+  const lblActWeatherTitle = document.getElementById('lbl-act-weather-title');
+  if (lblActWeatherTitle && t.actWeatherTitle) lblActWeatherTitle.textContent = t.actWeatherTitle;
+  const lblActWeatherDesc = document.getElementById('lbl-act-weather-desc');
+  if (lblActWeatherDesc && t.actWeatherDesc) lblActWeatherDesc.textContent = t.actWeatherDesc;
+
+  const lblActHealthTitle = document.getElementById('lbl-act-health-title');
+  if (lblActHealthTitle && t.actHealthTitle) lblActHealthTitle.textContent = t.actHealthTitle;
+  const lblActHealthDesc = document.getElementById('lbl-act-health-desc');
+  if (lblActHealthDesc && t.actHealthDesc) lblActHealthDesc.textContent = t.actHealthDesc;
+
+  // Secondary tools
+  const lblHomeSecTitle = document.getElementById('lbl-home-secondary-title');
+  if (lblHomeSecTitle && t.homeSecondaryTitle) lblHomeSecTitle.textContent = t.homeSecondaryTitle;
+  const lblToolPhotoTitle = document.getElementById('lbl-tool-photo-title');
+  if (lblToolPhotoTitle && t.toolPhotoTitle) lblToolPhotoTitle.textContent = t.toolPhotoTitle;
+  const lblToolPhotoDesc = document.getElementById('lbl-tool-photo-desc');
+  if (lblToolPhotoDesc && t.toolPhotoDesc) lblToolPhotoDesc.textContent = t.toolPhotoDesc;
+  const lblToolFcTitle = document.getElementById('lbl-tool-forecast-title');
+  if (lblToolFcTitle && t.toolForecastTitle) lblToolFcTitle.textContent = t.toolForecastTitle;
+  const lblToolFcDesc = document.getElementById('lbl-tool-forecast-desc');
+  if (lblToolFcDesc && t.toolForecastDesc) lblToolFcDesc.textContent = t.toolForecastDesc;
+  const lblToolProfTitle = document.getElementById('lbl-tool-profile-title');
+  if (lblToolProfTitle && t.toolProfileTitle) lblToolProfTitle.textContent = t.toolProfileTitle;
+  const lblToolProfDesc = document.getElementById('lbl-tool-profile-desc');
+  if (lblToolProfDesc && t.toolProfileDesc) lblToolProfDesc.textContent = t.toolProfileDesc;
+
   // Re-render currently active view
   if (state.activeTab === 'home') {
     updateHomeDashboardUI();
@@ -1381,8 +1453,14 @@ function updateHomeDashboardUI() {
         dom.dashGreetingText.textContent = `Welcome back, ${farmerName}!`;
       }
     } else {
-      dom.dashGreetingText.textContent = t.dashWelcomeGreeting || 'Welcome to Your Farm Dashboard';
+      dom.dashGreetingText.textContent = t.homeWelcomeTitle || t.dashWelcomeGreeting || 'Welcome to KisanMitra';
     }
+  }
+
+  // 1b. Farmer Subtitle
+  const lblHomeSub = document.getElementById('lbl-home-subtitle');
+  if (lblHomeSub && t.homeWelcomeSubtitle) {
+    lblHomeSub.textContent = t.homeWelcomeSubtitle;
   }
 
   // 2. Date Badge
@@ -1400,11 +1478,16 @@ function updateHomeDashboardUI() {
   // 3. Farm Location Text
   const loc = state.farmLocation || (state.profile && (state.profile.farm_location || state.profile.location)) || '';
   if (dom.dashFarmLocationText) {
+    const locPrefix = state.lang === 'te' ? 'పొలం ప్రాంతం' : (state.lang === 'hi' ? 'खेत का स्थान' : 'Farm Location');
     if (loc) {
-      dom.dashFarmLocationText.textContent = `Farm Location: ${loc.split(',')[0].trim()}`;
+      dom.dashFarmLocationText.textContent = `${locPrefix}: ${loc.split(',')[0].trim()}`;
     } else {
-      dom.dashFarmLocationText.textContent = 'Farm Location: Not set';
+      const notSet = state.lang === 'te' ? 'నిర్ణయించబడలేదు' : (state.lang === 'hi' ? 'सेट नहीं है' : 'Not set');
+      dom.dashFarmLocationText.textContent = `${locPrefix}: ${notSet}`;
     }
+  }
+  if (dom.dashLocChangeBtn) {
+    dom.dashLocChangeBtn.textContent = state.lang === 'te' ? 'మార్చు' : (state.lang === 'hi' ? 'बदलें' : 'Change');
   }
 
   // 4. Primary Crop & Variety / Growth Stage

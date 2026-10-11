@@ -186,7 +186,12 @@ class ConversationalAIEngine:
         "onion": "Onion", "ఉల్లిపాయ": "Onion", "ఉల్లి": "Onion", "प्याज": "Onion",
         "turmeric": "Turmeric", "పసుపు": "Turmeric", "हल्दी": "Turmeric",
         "maize": "Maize", "మొక్కజొన్న": "Maize", "मक्का": "Maize",
-        "potato": "Potato", "బంగాళాదుంప": "Potato", "ఆలూ": "Potato", "आलू": "Potato"
+        "potato": "Potato", "బంగాళాదుంప": "Potato", "ఆలూ": "Potato", "आलू": "Potato",
+        "groundnut": "Groundnut", "peanut": "Groundnut", "వేరుశనగ": "Groundnut", "పల్లీ": "Groundnut", "मूंगफली": "Groundnut",
+        "wheat": "Wheat", "గోధుమ": "Wheat", "గోధుమలు": "Wheat", "गेहूं": "Wheat", "गेहू": "Wheat",
+        "gram": "Gram", "bengal gram": "Gram", "chana": "Gram", "శనగ": "Gram", "శనగలు": "Gram", "चना": "Gram",
+        "soybean": "Soybean", "soya": "Soybean", "సోయా": "Soybean", "సోయాబీన్": "Soybean", "सोयाबीन": "Soybean",
+        "sugarcane": "Sugarcane", "చెరకు": "Sugarcane", "गन्ना": "Sugarcane"
     }
 
     CROP_TE_MAP = {
@@ -198,7 +203,12 @@ class ConversationalAIEngine:
         "Onion": "ఉల్లిపాయ",
         "Turmeric": "పసుపు",
         "Maize": "మొక్కజొన్న",
-        "Potato": "బంగాళాదుంప"
+        "Potato": "బంగాళాదుంప",
+        "Groundnut": "వేరుశనగ",
+        "Wheat": "గోధుమ",
+        "Gram": "శనగలు",
+        "Soybean": "సోయాబీన్",
+        "Sugarcane": "చెరకు"
     }
 
     CROP_HI_MAP = {
@@ -210,7 +220,12 @@ class ConversationalAIEngine:
         "Onion": "प्याज",
         "Turmeric": "हल्दी",
         "Maize": "मक्का",
-        "Potato": "आलू"
+        "Potato": "आलू",
+        "Groundnut": "मूंगफली",
+        "Wheat": "गेहूं",
+        "Gram": "चना",
+        "Soybean": "सोयाबीन",
+        "Sugarcane": "गन्ना"
     }
 
     VARIETY_VOCAB = {
@@ -1219,34 +1234,30 @@ The programmer replied: *"Because they had eggs!"* 😂"""
             res["detected_language"] = effective_lang
             return res
 
+        # Crop Planning & Suitability Intent
+        from knowledge_base import (
+            detect_agri_intent_and_symptoms,
+            is_ambiguous_symptom_query,
+            get_clarification_response,
+            get_crop_planning_recommendation
+        )
+        agri_intent = detect_agri_intent_and_symptoms(user_msg_clean)
+        if agri_intent.get("is_crop_planning"):
+            is_ambig, ambig_type = is_ambiguous_symptom_query(user_msg_clean, None)
+            if is_ambig and ambig_type == "crop_planning":
+                return get_clarification_response(None, "crop_planning", effective_lang)
+            res = get_crop_planning_recommendation(user_msg_clean, effective_lang)
+            return res
+
         # Crop Health & Pest Advisory Tool
         if is_crop_health_query:
             target_crop = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else session.active_crop)
+            is_ambig, ambig_type = is_ambiguous_symptom_query(user_msg_clean, target_crop)
+            if is_ambig:
+                return get_clarification_response(target_crop, ambig_type, effective_lang)
+
             if not target_crop:
-                if effective_lang == "te":
-                    return {
-                        "reply": "మీరు ఏ పంట గురించి అడుగుతున్నారు? (ఉదా: మిర్చి, టమోటా, పత్తి, వరి). పంట పేరు చెబితే సరైన సస్యరక్షణ సలహా ఇవ్వగలను.",
-                        "spoken_text": "మీరు ఏ పంట గురించి అడుగుతున్నారో తెలిపితే సరైన సస్యరక్షణ సలహా ఇవ్వగలను.",
-                        "tool_used": "clarification",
-                        "detected_language": "te",
-                        "suggested_actions": ["🌶️ మిర్చి సస్యరక్షణ", "🍅 టమోటా సస్యరక్షణ", "☁️ పత్తి సస్యరక్షణ"]
-                    }
-                elif effective_lang == "hi":
-                    return {
-                        "reply": "आप किस फसल के बारे में पूछ रहे हैं? (जैसे: मिर्च, टमाटर, कपास, धान)। कृपया फसल का नाम बताएं ताकि मैं सही उपचार बता सकूं।",
-                        "spoken_text": "कृपया फसल का नाम बताएं ताकि मैं सही उपचार बता सकूं।",
-                        "tool_used": "clarification",
-                        "detected_language": "hi",
-                        "suggested_actions": ["🌶️ मिर्च सुरक्षा", "🍅 टमाटर सुरक्षा", "☁️ कपास सुरक्षा"]
-                    }
-                else:
-                    return {
-                        "reply": "Which crop are you asking about? (e.g., Chilli, Tomato, Cotton, Paddy). Please specify your crop so I can provide the right crop protection advisory.",
-                        "spoken_text": "Which crop are you asking about?",
-                        "tool_used": "clarification",
-                        "detected_language": "en",
-                        "suggested_actions": ["🌶️ Chilli Protection", "🍅 Tomato Protection", "☁️ Cotton Protection"]
-                    }
+                return get_clarification_response(None, "missing_crop", effective_lang)
 
             session.active_crop = target_crop
             session.active_topic = "crop_health"
@@ -1993,47 +2004,9 @@ Here are verified APMC rates:
 
     @classmethod
     def _format_crop_health_response(cls, crop: str, query: str, lang: str, profile: Any = None) -> Dict[str, Any]:
-        """Provides remedies for pests, diseases, and leaf curl."""
-        advisory_data = AgriculturalTools.crop_knowledge(crop)
-        adv = advisory_data.get("advisory", {})
-        pest = adv.get("pest", "Thrips & Mites causing leaf curling")
-        sol = adv.get("solution", "Spray Neem oil (10,000 ppm) @ 2 ml/L or Fipronil 5% SC @ 2 ml/L.")
-
-        if lang == "te":
-            reply = f"""### 🛡️ **{crop}** పంట సంరక్షణ & నివారణ సూచనలు
-
-⚠️ **సమస్య:** {pest}
-💊 **సిఫార్సు చేయబడిన నివారణ:**
-{sol}
-
-💡 **సలహా:** ఖచ్చితమైన రోగ నిర్ధారణ కోసం ఆకు లేదా మొక్క ఫోటోను కెమెరా ద్వారా తీసి పంపవచ్చు!"""
-            spoken = f"{crop} పంటలో ఆకుముడత నివారణకు లీటరు నీటికి 2 మి.లీ వేపనూనె లేదా ఫిప్రోనిల్ పిచికారీ చేయండి."
-        elif lang == "hi":
-            reply = f"""### 🛡️ **{crop}** फसल प्रबंधन एवं रोकथाम परामर्श
-
-⚠️ **पहचान:** {pest}
-💊 **उपचार एवं रोकथाम:**
-{sol}
-
-💡 **टिप:** सटीक पहचान के लिए प्रभावित पत्ते की फोटो कैमरे से भेजें!"""
-            spoken = f"{crop} में पत्ती मरोड़ की रोकथाम हेतु 2 मिली नीम तेल प्रति लीटर पानी में मिलाकर छिड़काव करें।"
-        else:
-            reply = f"""### 🛡️ Plant Protection Guide for **{crop}**
-
-⚠️ **Identified Concern:** {pest}
-💊 **Recommended Management:**
-{sol}
-
-💡 **Pro Tip:** Tap the camera icon to upload a photo of affected foliage for automated AI visual diagnosis."""
-            spoken = f"For leaf curl in {crop}, apply Neem oil at 2 ml per liter or recommended foliar spray."
-
-        return {
-            "reply": reply,
-            "spoken_text": spoken,
-            "tool_used": "crop_doctor",
-            "context_applied": {"crop": crop},
-            "suggested_actions": ["📸 Upload Crop Photo", "🌿 Bio-control Methods", "🌦️ Check Spray Weather"]
-        }
+        """Provides grounded agronomic extension advisory for pests, diseases, nutrients, and management."""
+        from knowledge_base import get_structured_agri_advisory
+        return get_structured_agri_advisory(crop=crop, query=query, lang=lang, profile=profile)
 
     @classmethod
     def _handle_crop_image_analysis(cls, crop: str, lang: str, session: ConversationSession) -> Dict[str, Any]:
