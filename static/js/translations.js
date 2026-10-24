@@ -76,7 +76,8 @@ export const cropTranslations = {
 export const translations = {
   en: {
     // Brand & Header
-    brandTagline: "Your farming companion",
+    brandName: "KisanMitra",
+    brandTagline: "Your Farming Helper",
     menuHeading: "Menu",
     setUpProfile: "Set up profile",
     tapToPersonalize: "Tap to personalize",
@@ -92,27 +93,35 @@ export const translations = {
     navCrops: "My Crops",
     navProfile: "Profile",
 
-    // Landing & Hero
-    heroBadge: "SMART FARMING • POWERED BY AI",
-    heroTitle: "Grow Smarter. Harvest Better.",
-    heroSubtitle: "KisanMitra is your intelligent digital farming companion, delivering live APMC mandi rates, AI price forecasting, hyperlocal agro-weather, and plant health protection in your language.",
-    heroExploreBtn: "Explore Your Farm",
-    heroAskAiBtn: "Ask AI Assistant",
-    chipWeatherTitle: "Agro-Weather",
-    chipCropTitle: "Crop Health",
-    chipMarketTitle: "Mandi Intelligence",
-    
-    // Farmer Dashboard & Insights
-    dashWelcomeGreeting: "Welcome to Your Farm Dashboard",
-    dashInsightsTitle: "Insights for Your Farm",
-    dashInsightsSubtitle: "Real-time agronomic intelligence, market forecasts, and hyper-local weather alerts tailored to your farm.",
-    insightDailyAction: "Daily Farm Activity",
-    insightPriceForecast: "7-Day Price Forecast",
-    insightSprayWindow: "Spray & Irrigation Window",
-    insightPestManagement: "Plant Protection (IPM)",
+    // Home Screen (Clean & Simple - No Clutter)
+    homeTitle: "KisanMitra",
+    homeTagline: "Your Farming Helper",
+    homeWelcome: "Namaste! How can we help you on your farm today?",
+    actChatTitle: "Ask a Farming Question",
+    actChatDesc: "Ask about pests, diseases, fertilizers, or crops",
+    actMarketTitle: "Check Market Prices",
+    actMarketDesc: "Today's APMC mandi rates and price trends",
+    actWeatherTitle: "Check Weather",
+    actWeatherDesc: "Rain forecast, temperature & spray advisory",
+    actHealthTitle: "Check Crop Health",
+    actHealthDesc: "Diagnose plant yellowing, leaf curl & pests",
+    homeUpdateTitle: "Today's Farm Update",
+    homeUpdateDate: "Today",
+    updateWeatherLabel: "Weather Update",
+    updateMarketLabel: "Market Update",
+    updateAdvisoryLabel: "Farming Advisory",
+
+    // AI Assistant Screen
+    aiAssistantTitle: "AI Farming Assistant",
+    aiWelcomeHeading: "Namaste! How can I help you with your farming today?",
+    aiWelcomeCaption: "Choose a common question below or type your own question:",
+    suggest1: "Why are my crop leaves turning yellow?",
+    suggest2: "How can I manage pests?",
+    suggest3: "What is today's crop price?",
+    suggest4: "What should I know about watering my crop?",
 
     // Chat View
-    welcomeBadge: "🌾 Farming Companion",
+    welcomeBadge: "🌾 Farming Helper",
     welcomeTitle: "Welcome to KisanMitra",
     welcomeSubtitle: "Ask about your crop, market prices, weather or farming.",
     quickActionsHeading: "Quick Actions",
@@ -123,36 +132,7 @@ export const translations = {
     cropHelp: "Crop Help",
     analyzePhoto: "Check Crop Photo",
     photoAttachedText: "Crop photo attached for diagnosis",
-    // Farmer Home Screen (5-Second Clarity)
-    homeWelcomeTitle: "Welcome to KisanMitra",
-    homeWelcomeSubtitle: "Your farming helper",
-    homeActionsTitle: "What would you like to do?",
-    homeActionsTag: "Choose an option",
-    actChatTitle: "Ask a Farming Question",
-    actChatDesc: "Ask about pests, diseases, fertilizers, sowing or any farming doubt",
-    actMarketTitle: "Check Market Prices",
-    actMarketDesc: "Live APMC mandi rates, highest market prices & 7-day trend",
-    actWeatherTitle: "Check Weather",
-    actWeatherDesc: "Rain forecast, temperature, wind speed & spray safety window",
-    actHealthTitle: "Check Crop Health",
-    actHealthDesc: "Leaf curl, pests, yellowing remedies & ICAR crop doctor advice",
-    homeSecondaryTitle: "More Farm Tools",
-    toolPhotoTitle: "Check Crop Photo",
-    toolPhotoDesc: "Instant AI photo diagnosis",
-    toolForecastTitle: "Price Forecast",
-    toolForecastDesc: "7-day mandi price trends",
-    toolProfileTitle: "Farm Profile",
-    toolProfileDesc: "Edit crops & soil settings",
-
-    // Chat Suggested Pills
-    chatGreeting: "Namaste! How can I help with your farming today?",
-    chatSubtitle: "Tap any suggested question below or type/speak your own question:",
-    suggestedPillsTitle: "💡 Suggested Questions",
-    pill1: "Why are my chilli leaves curling?",
-    pill2: "What is today's chilli price in Guntur?",
-    pill3: "Will it rain tomorrow?",
-    pill4: "What fertilizer should I use for tomato?",
-    pill5: "Show cotton prices nearby",
+    inputPlaceholder: "Ask KisanMitra about your farm...",
 
     // Quick Action Prompts
     qPromptMarketPrice: "What is the market price today?",
@@ -416,6 +396,7 @@ export const translations = {
 
   te: {
     // Brand & Header
+    brandName: "కిసాన్ మిత్ర",
     brandTagline: "మీ వ్యవసాయ సహాయకుడు",
     menuHeading: "మెనూ",
     setUpProfile: "ప్రొఫైల్ నమోదు",
@@ -426,30 +407,38 @@ export const translations = {
 
     // Navigation
     navHome: "హోమ్",
-    navChat: "ఏఐ సహాయకుడు",
+    navChat: "AI సహాయకుడు",
     navMarket: "మార్కెట్ ధరలు",
     navWeather: "వాతావరణం",
     navCrops: "నా పంటలు",
     navProfile: "ప్రొఫైల్",
 
-    // Landing & Hero
-    heroBadge: "స్మార్ట్ వ్యవసాయం • ఏఐ సాంకేతికత",
-    heroTitle: "తెలివిగా సాగు చేయండి. అధిక దిగుబడి సాధించండి.",
-    heroSubtitle: "కిసాన్ మిత్ర మీ తెలివైన డిజిటల్ వ్యవసాయ తోడ్పాటు – లైవ్ APMC మార్కెట్ ధరలు, ఏఐ ధరల అంచనాలు, వాతావరణ సమాచారం మరియు సస్యరక్షణ సలహాలు తెలుగులోనే అందిస్తుంది.",
-    heroExploreBtn: "మీ పొలాన్ని పరిశీలించండి",
-    heroAskAiBtn: "ఏఐ సహాయకుడిని అడగండి",
-    chipWeatherTitle: "వ్యవసాయ వాతావరణం",
-    chipCropTitle: "పంట ఆరోగ్యం",
-    chipMarketTitle: "మార్కెట్ సమాచారం",
-    
-    // Farmer Dashboard & Insights
-    dashWelcomeGreeting: "మీ వ్యవసాయ డాష్‌బోర్డుకు స్వాగతం",
-    dashInsightsTitle: "మీ తోటకు ముఖ్యమైన సమాచారం",
-    dashInsightsSubtitle: "మీ తోటకు అనుగుణంగా లైవ్ మార్కెట్ విశ్లేషణ, ఏఐ ధరల అంచనా మరియు వాతావరణ సూచనలు.",
-    insightDailyAction: "నేటి వ్యవసాయ పనులు",
-    insightPriceForecast: "7 రోజుల ధరల అంచనా",
-    insightSprayWindow: "పిచికారీ & నీటి యాజమాన్యం",
-    insightPestManagement: "సస్యరక్షణ సూచనలు (IPM)",
+    // Home Screen (Clean & Simple)
+    homeTitle: "కిసాన్ మిత్ర",
+    homeTagline: "మీ వ్యవసాయ సహాయకుడు",
+    homeWelcome: "నమస్కారం! ఈరోజు మీ పొలానికి ఎలా సహాయపడగలం?",
+    actChatTitle: "వ్యవసాయ ప్రశ్న అడగండి",
+    actChatDesc: "తెగుళ్లు, ఎరువులు లేదా పంటల గురించి అడగండి",
+    actMarketTitle: "మార్కెట్ ధరలు చూడండి",
+    actMarketDesc: "నేటి వ్యవసాయ మార్కెట్ యార్డుల ధరలు మరియు ట్రెండ్స్",
+    actWeatherTitle: "వాతావరణం చూడండి",
+    actWeatherDesc: "వర్షం సూచన, ఉష్ణోగ్రత మరియు పిచికారీ సలహా",
+    actHealthTitle: "పంట ఆరోగ్యం పరీక్షించండి",
+    actHealthDesc: "ఆకులు పసుపుబారడం, ముడత మరియు తెగుళ్ల నివారణ",
+    homeUpdateTitle: "నేటి పొలం సమాచారం",
+    homeUpdateDate: "ఈరోజు",
+    updateWeatherLabel: "వాతావరణ సమాచారం",
+    updateMarketLabel: "మార్కెట్ సమాచారం",
+    updateAdvisoryLabel: "వ్యవసాయ సలహా",
+
+    // AI Assistant Screen
+    aiAssistantTitle: "AI వ్యవసాయ సహాయకుడు",
+    aiWelcomeHeading: "నమస్కారం! ఈరోజు మీ వ్యవసాయంలో ఎలా సహాయపడగలను?",
+    aiWelcomeCaption: "కింది ప్రశ్నలలో ఒకదాన్ని ఎంచుకోండి లేదా మీ ప్రశ్న రాయండి:",
+    suggest1: "నా పంట ఆకులు పసుపు రంగులోకి ఎందుకు మారుతున్నాయి?",
+    suggest2: "తెగుళ్లను ఎలా నివారించాలి?",
+    suggest3: "ఈరోజు పంట మార్కెట్ ధర ఎంత?",
+    suggest4: "పంటకు నీటిపారుదల గురించి నేను ఏమి తెలుసుకోవాలి?",
 
     // Chat View
     welcomeBadge: "🌾 వ్యవసాయ సహాయకుడు",
@@ -463,36 +452,7 @@ export const translations = {
     cropHelp: "పంట రక్షణ",
     analyzePhoto: "పంట ఫోటో పరిశీలన",
     photoAttachedText: "తెగులు గుర్తింపు కోసం పంట ఫోటో జోడించబడింది",
-    // Farmer Home Screen (5-Second Clarity)
-    homeWelcomeTitle: "కిసాన్ మిత్రకు స్వాగతం",
-    homeWelcomeSubtitle: "మీ వ్యవసాయ సహాయకుడు",
-    homeActionsTitle: "మీరు ఏమి చేయాలనుకుంటున్నారు?",
-    homeActionsTag: "ఒక ఎంపికను ఎంచుకోండి",
-    actChatTitle: "వ్యవసాయ ప్రశ్న అడగండి",
-    actChatDesc: "పంటలు, తెగుళ్ళు, ఎరువులు, విత్తనాలు లేదా ఏదైనా వ్యవసాయ సందేహం అడగండి",
-    actMarketTitle: "మార్కెట్ ధరలు చూడండి",
-    actMarketDesc: "లైవ్ APMC మార్కెట్ ధరలు, అత్యధిక ధరలు & 7 రోజుల అంచనా",
-    actWeatherTitle: "వాతావరణం చూడండి",
-    actWeatherDesc: "వర్ష సూచన, ఉష్ణోగ్రత, గాలి వేగం & పిచికారీ అనుకూల సమయం",
-    actHealthTitle: "పంట ఆరోగ్యం చూడండి",
-    actHealthDesc: "ఆకుముడత, పురుగులు, పసుపుబారడం & పంట సంరక్షణ సలహాలు",
-    homeSecondaryTitle: "మరిన్ని వ్యవసాయ సాధనాలు",
-    toolPhotoTitle: "పంట ఫోటో పరిశీలన",
-    toolPhotoDesc: "తక్షణ ఏఐ ఫోటో రోగ నిర్ధారణ",
-    toolForecastTitle: "ధరల అంచనా",
-    toolForecastDesc: "7 రోజుల మార్కెట్ ధరల అంచనా",
-    toolProfileTitle: "వ్యవసాయ ప్రొఫైల్",
-    toolProfileDesc: "పంటలు & నేల వివరాలు మార్చుకోండి",
-
-    // Chat Suggested Pills
-    chatGreeting: "నమస్తే! ఈరోజు మీ వ్యవసాయంలో నేను ఎలా సహాయపడగలను?",
-    chatSubtitle: "క్రింది సూచించిన ప్రశ్నను ఎంచుకోండి లేదా మీ ప్రశ్నను అడగండి:",
-    suggestedPillsTitle: "💡 సూచించిన ప్రశ్నలు",
-    pill1: "మిర్చి ఆకులు ఎందుకు ముడుచుకుపోతున్నాయి?",
-    pill2: "గుంటూరులో ఈరోజు మిర్చి ధర ఎంత?",
-    pill3: "రేపు వర్షం పడుతుందా?",
-    pill4: "టమోటాకు ఏ ఎరువు వాడాలి?",
-    pill5: "సమీప మార్కెట్లలో పత్తి ధరలు చూపించు",
+    inputPlaceholder: "వ్యవసాయం గురించి కిసాన్ మిత్రను అడగండి...",
 
     // Quick Action Prompts
     qPromptMarketPrice: "ఈరోజు మార్కెట్ ధర ఎంత?",
@@ -756,8 +716,9 @@ export const translations = {
 
   hi: {
     // Brand & Header
-    brandTagline: "आपका कृषि साथी",
-    menuHeading: "मेन्यू",
+    brandName: "किसान मित्र",
+    brandTagline: "आपका कृषि सहायक",
+    menuHeading: "मेनू",
     setUpProfile: "प्रोफ़ाइल दर्ज करें",
     tapToPersonalize: "विवरण भरने हेतु टैप करें",
     appearance: "दिखावट",
@@ -766,34 +727,42 @@ export const translations = {
 
     // Navigation
     navHome: "होम",
-    navChat: "एआई सहायक",
+    navChat: "AI सहायक",
     navMarket: "मंडी भाव",
     navWeather: "मौसम",
     navCrops: "मेरी फसलें",
     navProfile: "प्रोफ़ाइल",
 
-    // Landing & Hero
-    heroBadge: "स्मार्ट कृषि • एआई पावर्ड",
-    heroTitle: "समझदारी से खेती करें। बेहतर पैदावार पाएं।",
-    heroSubtitle: "किसानमित्र आपका बुद्धिमान डिजिटल कृषि साथी है – लाइव एपीएमसी मंडी भाव, एआई मूल्य पूर्वानुमान, सटीक कृषि मौसम और फसल सुरक्षा सलाह आपकी अपनी भाषा में।",
-    heroExploreBtn: "अपना खेत देखें",
-    heroAskAiBtn: "एआई सहायक से पूछें",
-    chipWeatherTitle: "कृषि मौसम",
-    chipCropTitle: "फसल स्वास्थ्य",
-    chipMarketTitle: "मंडी जानकारी",
-    
-    // Farmer Dashboard & Insights
-    dashWelcomeGreeting: "आपके फार्म डैशबोर्ड में स्वागत है",
-    dashInsightsTitle: "आपके खेत के लिए महत्वपूर्ण सुझाव",
-    dashInsightsSubtitle: "आपके खेत के अनुसार लाइव मंडी विश्लेषण, एआई मूल्य पूर्वानुमान और मौसम की जानकारी।",
-    insightDailyAction: "आज का कृषि कार्य",
-    insightPriceForecast: "7-दिवसीय मूल्य पूर्वानुमान",
-    insightSprayWindow: "छिड़काव एवं सिंचाई समय",
-    insightPestManagement: "फसल सुरक्षा सुझाव (IPM)",
+    // Home Screen (Clean & Simple)
+    homeTitle: "किसान मित्र",
+    homeTagline: "आपका कृषि सहायक",
+    homeWelcome: "नमस्ते! आज आपके खेत के लिए हम क्या मदद कर सकते हैं?",
+    actChatTitle: "खेती से जुड़ा सवाल पूछें",
+    actChatDesc: "कीट, रोग, खाद या फसल के बारे में पूछें",
+    actMarketTitle: "मंडी भाव देखें",
+    actMarketDesc: "आज के ताजा एपीएमसी मंडी भाव और रुझान",
+    actWeatherTitle: "मौसम की जानकारी देखें",
+    actWeatherDesc: "बारिश का अनुमान, तापमान और छिड़काव की सलाह",
+    actHealthTitle: "फसल स्वास्थ्य जांचें",
+    actHealthDesc: "पत्तियों का पीलापन, मरोड़िया और कीट निदान",
+    homeUpdateTitle: "आज का खेत अपडेट",
+    homeUpdateDate: "आज",
+    updateWeatherLabel: "मौसम अपडेट",
+    updateMarketLabel: "मंडी भाव अपडेट",
+    updateAdvisoryLabel: "कृषि परामर्श",
+
+    // AI Assistant Screen
+    aiAssistantTitle: "AI कृषि सहायक",
+    aiWelcomeHeading: "नमस्ते! आज आपकी खेती में मैं कैसे मदद कर सकता हूँ?",
+    aiWelcomeCaption: "नीचे दिए गए सुझावों में से चुनें या अपना सवाल पूछें:",
+    suggest1: "मेरी फसल की पत्तियां पीली क्यों पड़ रही हैं?",
+    suggest2: "कीटों का प्रबंधन कैसे करें?",
+    suggest3: "आज फसल का मंडी भाव क्या है?",
+    suggest4: "फसल की सिंचाई के बारे में क्या जानना जरूरी है?",
 
     // Chat View
-    welcomeBadge: "🌾 कृषि साथी",
-    welcomeTitle: "किसानमित्र में आपका स्वागत है",
+    welcomeBadge: "🌾 कृषि सहायक",
+    welcomeTitle: "किसान मित्र में आपका स्वागत है",
     welcomeSubtitle: "अपनी फसल, मंडी भाव, मौसम या खेती के बारे में कुछ भी पूछें।",
     quickActionsHeading: "त्वरित प्रश्न",
     marketPrices: "मंडी भाव",
@@ -803,36 +772,7 @@ export const translations = {
     cropHelp: "फसल सलाह",
     analyzePhoto: "फसल फोटो जांचें",
     photoAttachedText: "रोग पहचान हेतु फसल फोटो संलग्न है",
-    // Farmer Home Screen (5-Second Clarity)
-    homeWelcomeTitle: "किसान मित्र में आपका स्वागत है",
-    homeWelcomeSubtitle: "आपका कृषि सहायक",
-    homeActionsTitle: "आप क्या करना चाहते हैं?",
-    homeActionsTag: "एक विकल्प चुनें",
-    actChatTitle: "खेती से जुड़ा सवाल पूछें",
-    actChatDesc: "फसल, कीट, रोग, खाद, बुवाई या कोई भी कृषि समस्या पूछें",
-    actMarketTitle: "मंडी भाव देखें",
-    actMarketDesc: "ताजा एपीएमसी मंडी भाव, उच्चतम दरें एवं 7-दिवसीय पूर्वानुमान",
-    actWeatherTitle: "मौसम देखें",
-    actWeatherDesc: "बारिश का अनुमान, तापमान, हवा की गति और छिड़काव का सही समय",
-    actHealthTitle: "फसल का स्वास्थ्य देखें",
-    actHealthDesc: "पत्ती मरोड़, कीट, पीलापन और फसल डॉक्टर परामर्श",
-    homeSecondaryTitle: "अन्य कृषि उपकरण",
-    toolPhotoTitle: "फसल फोटो जांचें",
-    toolPhotoDesc: "तुरंत एआई फोटो द्वारा रोग पहचान",
-    toolForecastTitle: "मूल्य पूर्वानुमान",
-    toolForecastDesc: "7-दिवसीय मंडी भाव रुझान",
-    toolProfileTitle: "खेत प्रोफ़ाइल",
-    toolProfileDesc: "फसल और मिट्टी का विवरण बदलें",
-
-    // Chat Suggested Pills
-    chatGreeting: "नमस्ते! आज आपकी खेती में मैं कैसे मदद कर सकता हूँ?",
-    chatSubtitle: "नीचे दिए गए सुझावों में से चुनें या अपना प्रश्न पूछें:",
-    suggestedPillsTitle: "💡 सुझाए गए प्रश्न",
-    pill1: "मेरी मिर्च की पत्तियां क्यों मुड़ रही हैं?",
-    pill2: "गुंटूर में आज मिर्च का भाव क्या है?",
-    pill3: "क्या कल बारिश होगी?",
-    pill4: "टमाटर के लिए कौन सी खाद उपयोग करें?",
-    pill5: "नजदीकी मंडियों में कपास का भाव दिखाएं",
+    inputPlaceholder: "खेती के बारे में किसानमित्र से पूछें...",
 
     // Quick Action Prompts
     qPromptMarketPrice: "आज मंडी भाव क्या है?",

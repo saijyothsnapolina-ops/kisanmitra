@@ -816,105 +816,420 @@ a {
 }
 
 /* ==============================================================
-   Chat Screen (Primary Flow)
+   HOME SCREEN (Clean, Calm, Farmer-Centric Design - No Clutter)
+   ============================================================== */
+.home-screen-wrap {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  overflow-y: auto;
+}
+
+.home-hero-header {
+  text-align: center;
+  padding: 8px 16px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.home-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-forest-subtle);
+  color: var(--color-forest);
+  border: 1px solid rgba(27, 67, 50, 0.16);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 14px;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.home-hero-title {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-forest);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+}
+
+.home-hero-tagline {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-leaf);
+  font-style: italic;
+  margin-top: -2px;
+}
+
+.home-hero-welcome {
+  font-size: 14.5px;
+  color: var(--color-ink-muted);
+  max-width: 520px;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* 4 Clear Primary Actions Grid (2x2 on Desktop, 1-col on Mobile) */
+.home-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.home-action-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  background-color: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-action-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-forest);
+  box-shadow: var(--shadow-md);
+  background-color: var(--color-surface);
+}
+
+.home-action-card:active {
+  transform: translateY(0);
+}
+
+.home-action-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.home-action-card:hover .home-action-icon {
+  transform: scale(1.08);
+}
+
+.home-action-icon.chat-icon {
+  background-color: var(--color-forest-subtle);
+  border: 1px solid rgba(27, 67, 50, 0.15);
+}
+
+.home-action-icon.market-icon {
+  background-color: #fef3c7;
+  border: 1px solid #fde68a;
+}
+
+.home-action-icon.weather-icon {
+  background-color: #e0f2fe;
+  border: 1px solid #bae6fd;
+}
+
+.home-action-icon.health-icon {
+  background-color: #dcfce7;
+  border: 1px solid #bbf7d0;
+}
+
+.home-action-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.home-action-title {
+  font-family: var(--font-sans);
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--color-forest);
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+
+.home-action-desc {
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  line-height: 1.4;
+}
+
+.home-action-arrow {
+  font-size: 16px;
+  color: var(--color-ink-subtle);
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.home-action-card:hover .home-action-arrow {
+  transform: translateX(4px);
+  color: var(--color-forest);
+}
+
+/* Today's Farm Update Section */
+.home-update-section {
+  background-color: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.home-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 10px;
+}
+
+.home-section-title {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-forest);
+  margin: 0;
+}
+
+.home-section-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-subtle);
+  background: var(--color-surface);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+}
+
+.home-update-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.update-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 14px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease;
+}
+
+.update-card:hover {
+  border-color: var(--color-forest);
+}
+
+.update-card-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.update-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.update-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-leaf);
+  margin-bottom: 2px;
+}
+
+.update-card-val {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--color-ink-main);
+  line-height: 1.3;
+}
+
+.update-card-sub {
+  font-size: 12.5px;
+  color: var(--color-ink-muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+@media (max-width: 720px) {
+  .home-screen-wrap {
+    padding: 20px 14px 36px;
+    gap: 20px;
+  }
+  .home-hero-title {
+    font-size: 26px;
+  }
+  .home-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .home-action-card {
+    padding: 16px 18px;
+  }
+}
+
+/* ==============================================================
+   AI ASSISTANT CHAT SCREEN (Full Available Width, Centered)
    ============================================================== */
 .chat-layout {
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%;
   overflow: hidden;
   position: relative;
+}
+
+.chat-page-header {
+  height: 48px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.chat-header-title {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-forest);
+  margin: 0;
 }
 
 .chat-stream-area {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 24px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   scroll-behavior: smooth;
-  max-width: 920px;
+  max-width: 820px;
   width: 100%;
   margin: 0 auto;
 }
 
-/* Welcome Card (Clean Agricultural Companion Identity) */
-.welcome-companion-box {
-  background-color: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 22px 24px;
-  margin-bottom: 8px;
-}
-
-.welcome-badge-tag {
-  display: inline-flex;
+/* Chat Welcome Box (Minimal, Generous, Friendly) */
+.chat-welcome-container {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  background-color: var(--color-forest-subtle);
-  color: var(--color-forest);
-  border: 1px solid rgba(20, 83, 45, 0.18);
-  border-radius: var(--radius-full);
-  font-size: 11.5px;
-  font-weight: 700;
-  padding: 3px 10px;
-  margin-bottom: 12px;
+  text-align: center;
+  padding: 36px 16px 24px;
+  max-width: 680px;
+  margin: 0 auto;
 }
 
-.companion-greeting {
+.chat-welcome-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background-color: var(--color-forest-subtle);
+  border: 1.5px solid var(--color-forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-welcome-heading {
   font-family: var(--font-serif);
   font-size: 21px;
   font-weight: 700;
   color: var(--color-forest);
   margin-bottom: 6px;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
-.companion-description {
-  font-size: 14px;
+.chat-welcome-caption {
+  font-size: 13.5px;
   color: var(--color-ink-muted);
-  line-height: 1.5;
-  margin-bottom: 16px;
+  margin-bottom: 22px;
 }
 
-.quick-actions-heading {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--color-ink-subtle);
-  margin-bottom: 10px;
+/* 4 Simple Suggested Question Buttons (2x2 on desktop, 1-col on mobile) */
+.chat-suggestions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
 }
 
-/* Compact Quick Action Buttons (Intentional Design System Controls) */
-.quick-actions-strip {
+.chat-suggest-btn {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.compact-action-btn {
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  padding: 8px 14px;
+  border-radius: var(--radius-md);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-ink-main);
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  text-align: left;
   transition: all 0.15s ease;
   box-shadow: var(--shadow-sm);
 }
 
-.compact-action-btn:hover {
+.chat-suggest-btn:hover {
   border-color: var(--color-forest);
   background-color: var(--color-forest-subtle);
   color: var(--color-forest);
   transform: translateY(-1px);
+}
+
+.suggest-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.suggest-text {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .chat-page-header {
+    padding: 0 16px;
+  }
+  .chat-stream-area {
+    padding: 16px 12px;
+  }
+  .chat-welcome-container {
+    padding: 24px 8px 16px;
+  }
+  .chat-welcome-heading {
+    font-size: 18px;
+  }
+  .chat-suggestions-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Message Bubbles */
@@ -1106,7 +1421,7 @@ a {
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   font-size: 12px;
-  max-width: 920px;
+  max-width: 820px;
   margin: 0 auto;
   width: 100%;
 }
@@ -1115,7 +1430,7 @@ a {
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: 920px;
+  max-width: 820px;
   margin: 0 auto;
   width: 100%;
 }
@@ -4713,1151 +5028,6 @@ a {
   margin-top: 1px;
 }
 
-/* ==============================================================
-   View 0: Home / Landing & Farmer Dashboard (AgriTech Experience)
-   ============================================================== */
-#view-home {
-  overflow: hidden;
-}
 
-.home-layout-scroll {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 28px 32px 64px;
-  display: flex;
-  flex-direction: column;
-  gap: 36px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
 
-/* A. Hero Split Layout */
-.hero-split-section {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 36px;
-  align-items: center;
-  padding: 12px 0 20px;
-  min-height: 440px;
-}
-
-.hero-text-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 18px;
-  max-width: 620px;
-}
-
-.hero-badge-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background-color: var(--color-forest-subtle);
-  border: 1px solid rgba(45, 106, 79, 0.2);
-  border-radius: var(--radius-full);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  color: var(--color-forest);
-  text-transform: uppercase;
-}
-
-.hero-badge-pill .badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: var(--color-sage);
-  box-shadow: 0 0 8px var(--color-sage);
-  animation: pulseDot 2s ease-in-out infinite;
-}
-
-.hero-main-title {
-  font-family: var(--font-serif);
-  font-size: clamp(2.4rem, 3.8vw, 3.4rem);
-  font-weight: 700;
-  line-height: 1.15;
-  color: var(--color-ink-main);
-  letter-spacing: -0.02em;
-  margin: 0;
-}
-
-.hero-main-title .hero-highlight {
-  color: var(--color-leaf);
-  background: linear-gradient(135deg, var(--color-forest) 0%, var(--color-sage) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-}
-
-.hero-supporting-text {
-  font-family: var(--font-sans);
-  font-size: 1.05rem;
-  line-height: 1.65;
-  color: var(--color-ink-muted);
-  margin: 0;
-  max-width: 540px;
-}
-
-.hero-cta-group {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-
-.hero-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 13px 26px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 14.5px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 14px rgba(27, 67, 50, 0.25);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  touch-action: manipulation;
-}
-
-.hero-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(27, 67, 50, 0.35);
-  background: linear-gradient(135deg, #143527 0%, #245741 100%);
-}
-
-.hero-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 13px 24px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface);
-  color: var(--color-ink-main);
-  font-weight: 600;
-  font-size: 14.5px;
-  border: 1.5px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  touch-action: manipulation;
-}
-
-.hero-btn-secondary:hover {
-  border-color: var(--color-forest);
-  color: var(--color-forest);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  background: var(--color-surface-subtle);
-}
-
-/* Hero Artwork & Live Floating Chips */
-.hero-visual-col {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  padding: 18px 10px;
-}
-
-.hero-art-canvas {
-  position: relative;
-  width: 100%;
-  max-width: 520px;
-  aspect-ratio: 600 / 420;
-  border-radius: 24px;
-}
-
-.farm-landscape-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-  border-radius: 24px;
-  box-shadow: 0 16px 36px -12px rgba(20, 35, 24, 0.12);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
-.floating-chip {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 16px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: 14px;
-  box-shadow: 0 10px 25px -4px rgba(20, 35, 24, 0.12), 0 4px 10px -2px rgba(20, 35, 24, 0.06);
-  z-index: 10;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  user-select: none;
-}
-
-.floating-chip:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 14px 30px -4px rgba(20, 35, 24, 0.18);
-}
-
-.chip-weather {
-  top: -12px;
-  left: -12px;
-  animation: floatWeather 6s ease-in-out infinite;
-}
-
-.chip-market {
-  top: 26%;
-  right: -18px;
-  animation: floatMarket 7s ease-in-out infinite 1s;
-}
-
-.chip-crop {
-  bottom: -14px;
-  left: 15%;
-  animation: floatCrop 6.5s ease-in-out infinite 0.5s;
-}
-
-.chip-icon-box {
-  font-size: 20px;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(235, 245, 238, 0.85);
-  flex-shrink: 0;
-}
-
-.chip-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.chip-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: var(--color-ink-muted);
-}
-
-.chip-val {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--color-ink-main);
-  white-space: nowrap;
-}
-
-@keyframes floatWeather {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
-}
-
-@keyframes floatMarket {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(7px); }
-}
-
-@keyframes floatCrop {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-@keyframes pulseDot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
-}
-
-/* B. Farmer Dashboard Container */
-.farmer-dashboard-container {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  margin-top: 8px;
-}
-
-/* 1. Welcome Panel */
-.dash-welcome-panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 22px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-}
-
-.dash-welcome-left {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.dash-avatar-badge {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--color-forest-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  border: 1px solid rgba(45, 106, 79, 0.15);
-  flex-shrink: 0;
-}
-
-.dash-welcome-text {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.dash-greeting-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.dash-greeting {
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--color-ink-main);
-  margin: 0;
-}
-
-.dash-date-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  font-size: 11.5px;
-  font-weight: 600;
-  background: var(--color-surface-subtle);
-  color: var(--color-ink-muted);
-  border: 1px solid var(--color-border);
-}
-
-.dash-location-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
-  color: var(--color-ink-muted);
-}
-
-.dash-loc-pin {
-  font-size: 14px;
-}
-
-.dash-loc-edit-btn {
-  background: none;
-  border: none;
-  color: var(--color-forest);
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: underline;
-  padding: 2px 4px;
-}
-
-.dash-welcome-right {
-  max-width: 440px;
-}
-
-.dash-priority-insight {
-  background: var(--color-wheat-subtle);
-  border: 1px solid rgba(180, 83, 9, 0.2);
-  border-radius: var(--radius-md);
-  padding: 12px 18px;
-  font-size: 13px;
-  color: var(--color-ink-main);
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  line-height: 1.5;
-}
-
-.insight-sparkle {
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-/* 2. Section Headers */
-.dash-section-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  gap: 16px;
-}
-
-.dash-section-title {
-  font-family: var(--font-serif);
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--color-ink-main);
-  margin: 0;
-}
-
-.dash-section-sub {
-  font-size: 13.5px;
-  color: var(--color-ink-muted);
-  margin: 4px 0 0 0;
-  max-width: 650px;
-  line-height: 1.5;
-}
-
-.dash-section-tag {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-subtle);
-  color: var(--color-ink-muted);
-  border: 1px solid var(--color-border);
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.dash-badge-live {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  background: var(--color-success-bg);
-  color: var(--color-success);
-  border: 1px solid rgba(21, 128, 61, 0.2);
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* 3. Quick Actions Grid */
-.dash-quick-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 16px;
-}
-
-.dash-quick-action-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 16px 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  touch-action: manipulation;
-}
-
-.dash-quick-action-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-forest);
-  box-shadow: var(--shadow-md);
-  background: var(--color-surface);
-}
-
-.dash-quick-action-card:active {
-  transform: scale(0.98);
-}
-
-.dash-quick-action-card .quick-icon-wrap {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.dash-quick-action-card .quick-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-
-.dash-quick-action-card .quick-title {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--color-ink-main);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.dash-quick-action-card .quick-desc {
-  font-size: 12px;
-  color: var(--color-ink-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.dash-quick-action-card .quick-arrow {
-  font-size: 14px;
-  color: var(--color-ink-subtle);
-  transition: transform 0.2s ease, color 0.2s ease;
-}
-
-.dash-quick-action-card:hover .quick-arrow {
-  transform: translateX(3px);
-  color: var(--color-forest);
-}
-
-/* 4. "Insights for Your Farm" Grid */
-.dash-insights-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.dash-insights-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 18px;
-}
-
-.dash-insight-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.dash-insight-card.card-activity {
-  border-top: 3.5px solid #2d6a4f;
-}
-
-.dash-insight-card.card-forecast {
-  border-top: 3.5px solid #b45309;
-}
-
-.dash-insight-card.card-weather {
-  border-top: 3.5px solid #0284c7;
-}
-
-.dash-insight-card.card-ipm {
-  border-top: 3.5px solid #8b5cf6;
-}
-
-.dash-insight-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-border-hover);
-}
-
-.dash-insight-card .insight-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.dash-insight-card .insight-badge-icon {
-  font-size: 18px;
-}
-
-.dash-insight-card .insight-kicker {
-  font-size: 11px;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  color: var(--color-ink-muted);
-}
-
-.dash-insight-card .insight-card-title {
-  font-family: var(--font-serif);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--color-ink-main);
-  margin: 0;
-  line-height: 1.35;
-}
-
-.dash-insight-card .insight-card-body {
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--color-ink-muted);
-  margin: 0;
-  flex: 1;
-}
-
-.dash-insight-card .insight-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 14px;
-  border-top: 1px solid var(--color-border);
-}
-
-.dash-insight-card .insight-tag {
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-subtle);
-  color: var(--color-ink-muted);
-  border: 1px solid var(--color-border);
-}
-
-.dash-insight-card .insight-tag.tag-success {
-  background: var(--color-success-bg);
-  color: var(--color-success);
-  border-color: rgba(21, 128, 61, 0.2);
-}
-
-.dash-insight-card .insight-link-btn {
-  background: none;
-  border: none;
-  color: var(--color-forest);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 0;
-  transition: color 0.15s ease;
-}
-
-.dash-insight-card .insight-link-btn:hover {
-  color: var(--color-leaf);
-  text-decoration: underline;
-}
-
-/* Dark Theme Adjustments for Home & Dashboard */
-[data-theme="dark"] .floating-chip {
-  background: rgba(20, 31, 23, 0.88);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.45);
-}
-
-[data-theme="dark"] .floating-chip .chip-icon-box {
-  background: rgba(28, 43, 32, 0.9);
-}
-
-[data-theme="dark"] .dash-priority-insight {
-  background: rgba(251, 191, 36, 0.08);
-  border-color: rgba(251, 191, 36, 0.2);
-  color: var(--color-ink-main);
-}
-
-[data-theme="dark"] .hero-btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #062413;
-  font-weight: 700;
-}
-
-[data-theme="dark"] .hero-btn-primary:hover {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-}
-
-/* Responsive Breakpoints */
-@media (max-width: 980px) {
-  .hero-split-section {
-    grid-template-columns: 1fr;
-    gap: 32px;
-    text-align: left;
-  }
-
-  .hero-visual-col {
-    order: -1;
-    max-width: 480px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  .dash-welcome-panel {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .dash-welcome-right {
-    width: 100%;
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 640px) {
-  .home-layout-scroll {
-    padding: 16px 16px 44px;
-    gap: 24px;
-  }
-
-  .hero-main-title {
-    font-size: 2.15rem;
-  }
-
-  .hero-cta-group {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .hero-btn-primary,
-  .hero-btn-secondary {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .floating-chip {
-    padding: 8px 12px;
-  }
-
-  .chip-weather {
-    top: -8px;
-    left: -6px;
-  }
-
-  .chip-market {
-    top: 20%;
-    right: -8px;
-  }
-
-  .chip-crop {
-    bottom: -8px;
-    left: 10%;
-  }
-
-  .dash-quick-actions-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dash-insights-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ==============================================================
-   CLEAN FARMER HOME INTERFACE (5-Second Clarity & Touch Design)
-   ============================================================== */
-
-.farmer-welcome-hero {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: 24px 28px;
-  box-shadow: var(--shadow-card);
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  position: relative;
-  overflow: hidden;
-}
-
-.farmer-welcome-top {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.farmer-avatar-badge {
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-lg);
-  background: var(--color-forest-subtle);
-  border: 1px solid rgba(45, 106, 79, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.85rem;
-  flex-shrink: 0;
-}
-
-.farmer-welcome-headings {
-  flex: 1;
-  min-width: 220px;
-}
-
-.farmer-main-greeting {
-  font-family: var(--font-serif);
-  font-size: 1.85rem;
-  font-weight: 700;
-  color: var(--color-ink-main);
-  line-height: 1.25;
-  margin: 0;
-}
-
-.farmer-sub-greeting {
-  font-size: 1.05rem;
-  font-weight: 500;
-  color: var(--color-ink-muted);
-  margin: 4px 0 0 0;
-}
-
-.farmer-today-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--color-ink-main);
-}
-
-.status-live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-success);
-  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.2);
-  animation: pulse-ring 2.5s infinite;
-}
-
-.farmer-meta-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.farmer-meta-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: var(--radius-md);
-  font-size: 0.92rem;
-  line-height: 1.4;
-}
-
-.farmer-meta-chip.meta-loc {
-  background: var(--color-forest-subtle);
-  border: 1px solid rgba(45, 106, 79, 0.18);
-  color: var(--color-forest);
-  font-weight: 600;
-}
-
-.farmer-meta-chip.meta-tip {
-  background: var(--color-wheat-subtle);
-  border: 1px solid rgba(180, 83, 9, 0.2);
-  color: var(--color-wheat);
-  font-weight: 500;
-  flex: 1;
-}
-
-/* 4 Primary Action Buttons Section */
-.primary-actions-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.actions-section-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-top: 6px;
-}
-
-.actions-section-title {
-  font-family: var(--font-serif);
-  font-size: 1.45rem;
-  font-weight: 700;
-  color: var(--color-ink-main);
-  margin: 0;
-}
-
-.actions-section-tag {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--color-ink-subtle);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.farmer-primary-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-}
-
-.primary-action-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: 20px 24px;
-  cursor: pointer;
-  text-align: left;
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-sm);
-  touch-action: manipulation;
-  min-height: 104px;
-  width: 100%;
-}
-
-.primary-action-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-forest);
-  box-shadow: var(--shadow-card);
-}
-
-.primary-action-card:active {
-  transform: translateY(0);
-}
-
-.action-card-left {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex: 1;
-}
-
-.action-card-icon-halo {
-  width: 58px;
-  height: 58px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.95rem;
-  flex-shrink: 0;
-  transition: transform var(--transition-fast);
-}
-
-.primary-action-card:hover .action-card-icon-halo {
-  transform: scale(1.06);
-}
-
-.icon-chat {
-  background: rgba(45, 106, 79, 0.12);
-  color: #1b4332;
-}
-
-.icon-market {
-  background: rgba(180, 83, 9, 0.12);
-  color: #b45309;
-}
-
-.icon-weather {
-  background: rgba(2, 132, 199, 0.12);
-  color: #0284c7;
-}
-
-.icon-health {
-  background: rgba(82, 183, 136, 0.16);
-  color: #2d6a4f;
-}
-
-.action-card-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.action-card-title {
-  font-size: 1.22rem;
-  font-weight: 700;
-  color: var(--color-ink-main);
-  margin: 0;
-  line-height: 1.3;
-}
-
-.action-card-desc {
-  font-size: 0.94rem;
-  color: var(--color-ink-muted);
-  margin: 0;
-  line-height: 1.35;
-}
-
-.action-card-arrow-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-ink-muted);
-  font-size: 1rem;
-  margin-left: 12px;
-  flex-shrink: 0;
-  transition: all var(--transition-fast);
-}
-
-.primary-action-card:hover .action-card-arrow-circle {
-  background: var(--color-forest);
-  border-color: var(--color-forest);
-  color: #ffffff;
-  transform: translateX(3px);
-}
-
-/* Secondary Tools Strip */
-.secondary-tools-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.secondary-heading {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--color-ink-main);
-  margin: 0;
-}
-
-.secondary-tools-strip {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
-.secondary-tool-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 14px 18px;
-  cursor: pointer;
-  text-align: left;
-  transition: all var(--transition-fast);
-  touch-action: manipulation;
-  box-shadow: var(--shadow-sm);
-}
-
-.secondary-tool-card:hover {
-  border-color: var(--color-border-hover);
-  background: var(--color-surface-subtle);
-  transform: translateY(-1px);
-}
-
-.secondary-tool-card .tool-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.secondary-tool-card .tool-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.secondary-tool-card .tool-title {
-  font-size: 0.98rem;
-  font-weight: 700;
-  color: var(--color-ink-main);
-}
-
-.secondary-tool-card .tool-desc {
-  font-size: 0.84rem;
-  color: var(--color-ink-subtle);
-}
-
-/* Suggested Question Pills (Chat View) */
-.suggested-questions-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 18px 0 14px 0;
-  width: 100%;
-}
-
-.suggested-pills-label {
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--color-forest);
-  letter-spacing: 0.2px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.suggested-pills-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.suggested-question-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-full);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-ink-main);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-  text-align: left;
-  touch-action: manipulation;
-}
-
-.suggested-question-pill:hover {
-  background: var(--color-forest-subtle);
-  border-color: var(--color-forest);
-  color: var(--color-forest);
-  transform: translateY(-1px);
-}
-
-.suggested-question-pill:active {
-  transform: scale(0.98);
-}
-
-.suggested-question-pill .pill-icon {
-  font-size: 1.15rem;
-  flex-shrink: 0;
-}
-
-@media (max-width: 768px) {
-  .farmer-primary-actions-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-  .secondary-tools-strip {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .farmer-meta-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .farmer-meta-chip.meta-tip {
-    width: 100%;
-  }
-}
 

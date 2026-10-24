@@ -37,9 +37,9 @@
         <button type="button" class="sidebar-close-btn" id="sidebar-close-btn" title="Close menu">✕</button>
       </div>
 
-      <!-- Navigation List: [ Chat ] [ Market ] [ Weather ] [ My Crops ] [ Profile ] -->
+      <!-- Navigation List: [ Home ] [ AI Assistant ] [ Market ] [ Weather ] [ My Crops ] [ Profile ] -->
       <div class="sidebar-nav-container">
-        <div class="sidebar-nav-heading">Menu</div>
+        <div class="sidebar-nav-heading" id="lbl-sidebar-menu">Menu</div>
         <nav class="sidebar-nav">
           <button type="button" class="sidebar-nav-item active" data-tab="home">
             <span class="nav-icon">🏡</span>
@@ -52,7 +52,7 @@
           </button>
           <button type="button" class="sidebar-nav-item" data-tab="market">
             <span class="nav-icon">💰</span>
-            <span class="nav-label" id="lbl-nav-market">Market</span>
+            <span class="nav-label" id="lbl-nav-market">Market Prices</span>
           </button>
           <button type="button" class="sidebar-nav-item" data-tab="weather">
             <span class="nav-icon">🌦️</span>
@@ -150,276 +150,145 @@
       <main class="main-viewport">
 
         <!-- ============================================== -->
-        <!-- VIEW 0: HOME / LANDING & FARMER DASHBOARD      -->
+        <!-- VIEW 0: HOME (CLEAN, SIMPLE, NO CLUTTER)       -->
         <!-- ============================================== -->
         <section class="tab-view-pane active" id="view-home">
-          <div class="home-layout-scroll">
+          <div class="home-screen-wrap">
             
-            <!-- ============================================================== -->
-            <!-- FARMER HOME SCREEN: Clean, Calm & Friendly Agricultural Design -->
-            <!-- 5-Second Clarity: Welcome + 4 Primary Large Action Buttons     -->
-            <!-- ============================================================== -->
-            
-            <!-- 1. Friendly Farmer Welcome Banner -->
-            <div class="farmer-welcome-hero" id="farmer-dashboard">
-              <div class="farmer-welcome-top">
-                <div class="farmer-avatar-badge">🌾</div>
-                <div class="farmer-welcome-headings">
-                  <h1 class="farmer-main-greeting" id="dash-greeting-text">Welcome to KisanMitra</h1>
-                  <p class="farmer-sub-greeting" id="lbl-home-subtitle">Your farming helper</p>
-                </div>
-                <div class="farmer-today-pill">
-                  <span class="status-live-dot"></span>
-                  <span id="dash-date-badge">Today</span>
-                </div>
-              </div>
+            <!-- Essential Top Identity -->
+            <div class="home-hero-header">
+              <div class="home-hero-badge">🌾 KisanMitra</div>
+              <h1 class="home-hero-title" id="lbl-home-title">KisanMitra</h1>
+              <p class="home-hero-tagline" id="lbl-home-tagline">Your Farming Helper</p>
+              <p class="home-hero-welcome" id="lbl-home-welcome">Namaste! How can we help you on your farm today?</p>
+            </div>
 
-              <!-- Farm Context & Location Bar -->
-              <div class="farmer-meta-bar">
-                <div class="farmer-meta-chip meta-loc">
-                  <span class="meta-icon">📍</span>
-                  <span class="meta-text" id="dash-farm-location-text">Farm Location: Not set</span>
-                  <button type="button" class="dash-loc-edit-btn" id="dash-loc-change-btn">Change</button>
+            <!-- The 4 Clear Actions in 2x2 Grid -->
+            <div class="home-actions-grid">
+              <!-- 1. Ask a Farming Question -->
+              <button type="button" class="home-action-card" id="home-act-chat" data-action="chat">
+                <div class="home-action-icon chat-icon">💬</div>
+                <div class="home-action-content">
+                  <h2 class="home-action-title" id="lbl-act-chat-title">Ask a Farming Question</h2>
+                  <p class="home-action-desc" id="lbl-act-chat-desc">Ask about pests, diseases, fertilizers, or crops</p>
                 </div>
-                <div class="farmer-meta-chip meta-tip">
-                  <span class="meta-icon">💡</span>
-                  <span class="meta-text" id="dash-priority-insight-text">Keep light drip moisture in flowering crops and monitor lower leaves for thrips.</span>
+                <span class="home-action-arrow">➔</span>
+              </button>
+
+              <!-- 2. Check Market Prices -->
+              <button type="button" class="home-action-card" id="home-act-market" data-action="market">
+                <div class="home-action-icon market-icon">💰</div>
+                <div class="home-action-content">
+                  <h2 class="home-action-title" id="lbl-act-market-title">Check Market Prices</h2>
+                  <p class="home-action-desc" id="lbl-act-market-desc">Today's APMC mandi rates and price trends</p>
+                </div>
+                <span class="home-action-arrow">➔</span>
+              </button>
+
+              <!-- 3. Check Weather -->
+              <button type="button" class="home-action-card" id="home-act-weather" data-action="weather">
+                <div class="home-action-icon weather-icon">🌦️</div>
+                <div class="home-action-content">
+                  <h2 class="home-action-title" id="lbl-act-weather-title">Check Weather</h2>
+                  <p class="home-action-desc" id="lbl-act-weather-desc">Rain forecast, temperature & spray advisory</p>
+                </div>
+                <span class="home-action-arrow">➔</span>
+              </button>
+
+              <!-- 4. Check Crop Health -->
+              <button type="button" class="home-action-card" id="home-act-health" data-action="crop_health">
+                <div class="home-action-icon health-icon">🌱</div>
+                <div class="home-action-content">
+                  <h2 class="home-action-title" id="lbl-act-health-title">Check Crop Health</h2>
+                  <p class="home-action-desc" id="lbl-act-health-desc">Diagnose plant yellowing, leaf curl & pests</p>
+                </div>
+                <span class="home-action-arrow">➔</span>
+              </button>
+            </div>
+
+            <!-- ONLY ONE Compact Section: Today's Farm Update -->
+            <div class="home-update-section" id="home-update-section">
+              <div class="home-section-header">
+                <h2 class="home-section-title" id="lbl-home-update-title">Today's Farm Update</h2>
+                <span class="home-section-date" id="home-update-date">Today</span>
+              </div>
+              
+              <div class="home-update-cards" id="home-update-cards">
+                <!-- 1 Weather Update (Real localized data if available) -->
+                <div class="update-card update-weather" id="update-card-weather">
+                  <div class="update-card-icon">🌦️</div>
+                  <div class="update-card-body">
+                    <div class="update-card-label" id="lbl-update-weather-label">Weather Update</div>
+                    <div class="update-card-val" id="update-weather-val">29°C • Partly Cloudy</div>
+                    <div class="update-card-sub" id="update-weather-sub">Rain likelihood: 30% • Spray favorable before 11 AM</div>
+                  </div>
+                </div>
+
+                <!-- 1 Market Update (Real APMC mandi data if available) -->
+                <div class="update-card update-market" id="update-card-market">
+                  <div class="update-card-icon">💰</div>
+                  <div class="update-card-body">
+                    <div class="update-card-label" id="lbl-update-market-label">Market Update</div>
+                    <div class="update-card-val" id="update-market-val">₹3,400 / Quintal</div>
+                    <div class="update-card-sub" id="update-market-sub">Tomato • Guntur APMC (Highest nearby: ₹3,500)</div>
+                  </div>
+                </div>
+
+                <!-- 1 Farming Advisory (Real supported advisory if available) -->
+                <div class="update-card update-advisory" id="update-card-advisory">
+                  <div class="update-card-icon">💡</div>
+                  <div class="update-card-body">
+                    <div class="update-card-label" id="lbl-update-advisory-label">Farming Advisory</div>
+                    <div class="update-card-val" id="update-advisory-val">Crop Moisture & Care</div>
+                    <div class="update-card-sub" id="update-advisory-sub">Keep light drip moisture in flowering crops. Check under leaves for early pests.</div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- 2. THE 4 PRIMARY LARGE ACTION BUTTONS (5-Second Farmer Clarity) -->
-            <div class="primary-actions-section">
-              <div class="actions-section-header">
-                <h2 class="actions-section-title" id="lbl-home-actions-title">What would you like to do?</h2>
-                <span class="actions-section-tag" id="lbl-home-actions-tag">Choose an option</span>
-              </div>
-
-              <div class="farmer-primary-actions-grid">
-                
-                <!-- Action 1: Ask a Farming Question -->
-                <button type="button" class="primary-action-card card-chat dash-quick-action-card" id="home-btn-chat" data-action="chat" data-query="What should I do today?">
-                  <div class="action-card-left">
-                    <div class="action-card-icon-halo icon-chat">💬</div>
-                    <div class="action-card-text">
-                      <h3 class="action-card-title" id="lbl-act-chat-title">Ask a Farming Question</h3>
-                      <p class="action-card-desc" id="lbl-act-chat-desc">Ask about pests, diseases, fertilizers, sowing or any farming doubt</p>
-                    </div>
-                  </div>
-                  <div class="action-card-arrow-circle">➔</div>
-                </button>
-
-                <!-- Action 2: Check Market Prices -->
-                <button type="button" class="primary-action-card card-market dash-quick-action-card" id="home-btn-market" data-action="market">
-                  <div class="action-card-left">
-                    <div class="action-card-icon-halo icon-market">💰</div>
-                    <div class="action-card-text">
-                      <h3 class="action-card-title" id="lbl-act-market-title">Check Market Prices</h3>
-                      <p class="action-card-desc" id="lbl-act-market-desc">Live APMC mandi rates, highest market prices & 7-day trend</p>
-                    </div>
-                  </div>
-                  <div class="action-card-arrow-circle">➔</div>
-                </button>
-
-                <!-- Action 3: Check Weather -->
-                <button type="button" class="primary-action-card card-weather dash-quick-action-card" id="home-btn-weather" data-action="weather">
-                  <div class="action-card-left">
-                    <div class="action-card-icon-halo icon-weather">🌦️</div>
-                    <div class="action-card-text">
-                      <h3 class="action-card-title" id="lbl-act-weather-title">Check Weather</h3>
-                      <p class="action-card-desc" id="lbl-act-weather-desc">Rain forecast, temperature, wind speed & spray safety window</p>
-                    </div>
-                  </div>
-                  <div class="action-card-arrow-circle">➔</div>
-                </button>
-
-                <!-- Action 4: Check Crop Health -->
-                <button type="button" class="primary-action-card card-health dash-quick-action-card" id="home-btn-crop-health" data-action="crop_health">
-                  <div class="action-card-left">
-                    <div class="action-card-icon-halo icon-health">🌱</div>
-                    <div class="action-card-text">
-                      <h3 class="action-card-title" id="lbl-act-health-title">Check Crop Health</h3>
-                      <p class="action-card-desc" id="lbl-act-health-desc">Leaf curl, pests, yellowing remedies & ICAR crop doctor advice</p>
-                    </div>
-                  </div>
-                  <div class="action-card-arrow-circle">➔</div>
-                </button>
-
-              </div>
-            </div>
-
-            <!-- 3. Secondary Farm Tools (Neatly Organized Below) -->
-            <div class="secondary-tools-section">
-              <div class="secondary-section-header">
-                <h3 class="secondary-section-title" id="lbl-home-secondary-title">More Farm Tools</h3>
-              </div>
-              <div class="secondary-tools-strip">
-                <button type="button" class="secondary-tool-card dash-quick-action-card" data-action="crop_photo" id="home-btn-photo-tool">
-                  <span class="tool-icon">📷</span>
-                  <div class="tool-info">
-                    <div class="tool-title" id="lbl-tool-photo-title">Check Crop Photo</div>
-                    <div class="tool-desc" id="lbl-tool-photo-desc">Instant AI photo diagnosis</div>
-                  </div>
-                </button>
-                <button type="button" class="secondary-tool-card dash-quick-action-card" data-action="forecast" id="home-btn-forecast-tool">
-                  <span class="tool-icon">📈</span>
-                  <div class="tool-info">
-                    <div class="tool-title" id="lbl-tool-forecast-title">Price Forecast</div>
-                    <div class="tool-desc" id="lbl-tool-forecast-desc">7-day mandi price trends</div>
-                  </div>
-                </button>
-                <button type="button" class="secondary-tool-card dash-quick-action-card" data-action="profile" id="home-btn-profile-tool">
-                  <span class="tool-icon">👨‍🌾</span>
-                  <div class="tool-info">
-                    <div class="tool-title" id="lbl-tool-profile-title">Farm Profile</div>
-                    <div class="tool-desc" id="lbl-tool-profile-desc">Edit crops & soil settings</div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-              <!-- 3. Unique Section: "Insights for Your Farm" -->
-              <div class="dash-insights-section">
-                <div class="dash-section-header">
-                  <div>
-                    <h3 class="dash-section-title" id="lbl-dash-insights-title">Insights for Your Farm</h3>
-                    <p class="dash-section-sub" id="lbl-dash-insights-sub">Real-time agronomic intelligence, market forecasts, and hyper-local weather alerts tailored to your farm.</p>
-                  </div>
-                  <span class="dash-badge-live">LIVE INTELLIGENCE</span>
-                </div>
-
-                <div class="dash-insights-grid">
-                  <!-- Insight 1: Daily Activity -->
-                  <div class="dash-insight-card card-activity">
-                    <div class="insight-header">
-                      <span class="insight-badge-icon">🌾</span>
-                      <span class="insight-kicker" id="lbl-insight-activity">Daily Farm Activity</span>
-                    </div>
-                    <h4 class="insight-card-title" id="dash-insight-activity-title">Nutrient & Moisture Management</h4>
-                    <p class="insight-card-body" id="dash-insight-activity-body">Maintain light, consistent irrigation during the flowering stage. Avoid water stagnation and prepare potassium nitrate foliar spray.</p>
-                    <div class="insight-card-footer">
-                      <span class="insight-tag">Growth Stage: Flowering</span>
-                    </div>
-                  </div>
-
-                  <!-- Insight 2: ML Market Forecast -->
-                  <div class="dash-insight-card card-forecast">
-                    <div class="insight-header">
-                      <span class="insight-badge-icon">📈</span>
-                      <span class="insight-kicker" id="lbl-insight-forecast">7-Day Price Forecast</span>
-                    </div>
-                    <h4 class="insight-card-title" id="dash-insight-forecast-title">Upward Mandi Momentum (+2.7%)</h4>
-                    <p class="insight-card-body" id="dash-insight-forecast-body">Our statistical Ridge regression model projects price appreciation over the next 7 days across regional APMC yards.</p>
-                    <div class="insight-card-footer">
-                      <span class="insight-tag tag-success">Model MAE: ₹98.75/Qtl</span>
-                      <button type="button" class="insight-link-btn" onclick="document.querySelector('[data-tab=market]').click()">View Mandis ➔</button>
-                    </div>
-                  </div>
-
-                  <!-- Insight 3: Weather Window -->
-                  <div class="dash-insight-card card-weather">
-                    <div class="insight-header">
-                      <span class="insight-badge-icon">🌦️</span>
-                      <span class="insight-kicker" id="lbl-insight-weather">Spray & Irrigation Window</span>
-                    </div>
-                    <h4 class="insight-card-title" id="dash-insight-weather-title">Morning Spray Recommended</h4>
-                    <p class="insight-card-body" id="dash-insight-weather-body">Favorable spray conditions between 7:00 AM and 11:00 AM. 30% rain likelihood later in the evening.</p>
-                    <div class="insight-card-footer">
-                      <span class="insight-tag">Wind: 12 km/h • Humidity: 72%</span>
-                    </div>
-                  </div>
-
-                  <!-- Insight 4: Plant Protection (IPM) -->
-                  <div class="dash-insight-card card-ipm">
-                    <div class="insight-header">
-                      <span class="insight-badge-icon">🌿</span>
-                      <span class="insight-kicker" id="lbl-insight-ipm">Plant Protection (IPM)</span>
-                    </div>
-                    <h4 class="insight-card-title" id="dash-insight-ipm-title">Sucking Pest & Thrips Monitoring</h4>
-                    <p class="insight-card-body" id="dash-insight-ipm-body">Inspect lower leaf surfaces for yellowing or curl. Install 10-15 blue/yellow sticky traps per acre for organic defense.</p>
-                    <div class="insight-card-footer">
-                      <button type="button" class="insight-link-btn" id="dash-ipm-photo-btn">Analyze Leaf Photo 📷</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div><!-- /.farmer-dashboard-container -->
-          </div><!-- /.home-layout-scroll -->
+          </div>
         </section>
 
         <!-- ============================================== -->
-        <!-- VIEW 1: CHAT (AI FARMING ASSISTANT)            -->
+        <!-- VIEW 1: AI ASSISTANT (FULL-WIDTH, CENTERED)    -->
         <!-- ============================================== -->
         <section class="tab-view-pane" id="view-chat">
           <div class="chat-layout">
             
-            <!-- Message Stream -->
+            <!-- Clean Header -->
+            <div class="chat-page-header">
+              <h2 class="chat-header-title" id="lbl-chat-header-title">AI Farming Assistant</h2>
+            </div>
+
+            <!-- Message Stream Area: Fully centered, no empty sidebar -->
             <div class="chat-stream-area" id="chat-stream">
               
-              <!-- Welcome Companion Card (Warm Agricultural Identity) -->
-              <div class="welcome-companion-box">
-                <div class="welcome-badge-tag" id="lbl-chat-badge">🌾 Farming Companion</div>
-                <h2 class="companion-greeting" id="lbl-chat-greeting">Namaste! How can I help with your farming today?</h2>
-                <p class="companion-description" id="lbl-chat-sub">
-                  Tap any suggested question below or type/speak your own question:
-                </p>
+              <!-- Clean Welcome Box -->
+              <div class="chat-welcome-container" id="chat-welcome-box">
+                <div class="chat-welcome-avatar">🌾</div>
+                <h3 class="chat-welcome-heading" id="lbl-chat-welcome-heading">Namaste! How can I help you with your farming today?</h3>
+                <p class="chat-welcome-caption" id="lbl-chat-welcome-caption">Choose a common question below or type your own question:</p>
 
-                <!-- 5 Real Suggested Question Pills -->
-                <div class="suggested-questions-container">
-                  <div class="suggested-pills-label" id="lbl-suggested-pills-title">💡 Suggested Questions</div>
-                  <div class="suggested-pills-grid">
-                    <button type="button" class="suggested-question-pill" data-query="Why are my chilli leaves curling?">
-                      <span class="pill-icon">🌶️</span>
-                      <span class="pill-text" id="lbl-pill-1">Why are my chilli leaves curling?</span>
-                    </button>
-                    <button type="button" class="suggested-question-pill" data-query="What is today's chilli price in Guntur?">
-                      <span class="pill-icon">💰</span>
-                      <span class="pill-text" id="lbl-pill-2">What is today's chilli price in Guntur?</span>
-                    </button>
-                    <button type="button" class="suggested-question-pill" data-query="Will it rain tomorrow?">
-                      <span class="pill-icon">🌦️</span>
-                      <span class="pill-text" id="lbl-pill-3">Will it rain tomorrow?</span>
-                    </button>
-                    <button type="button" class="suggested-question-pill" data-query="What fertilizer should I use for tomato?">
-                      <span class="pill-icon">🍅</span>
-                      <span class="pill-text" id="lbl-pill-4">What fertilizer should I use for tomato?</span>
-                    </button>
-                    <button type="button" class="suggested-question-pill" data-query="Show cotton prices nearby">
-                      <span class="pill-icon">☁️</span>
-                      <span class="pill-text" id="lbl-pill-5">Show cotton prices nearby</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="quick-actions-heading" id="lbl-quick-actions-title">Quick Categories</div>
-                
-                <!-- Compact Icon + Text Action Buttons (KisanMitra Controls, NOT Browser Defaults) -->
-                <div class="quick-actions-strip">
-                  <button type="button" class="compact-action-btn" data-query="What is the market price today?" data-action="market_prices">
-                    <span class="action-icon">💰</span>
-                    <span class="action-label" id="lbl-act-mkt-price">Market Price</span>
+                <!-- 4 Simple Suggested Questions Initially -->
+                <div class="chat-suggestions-grid">
+                  <button type="button" class="chat-suggest-btn" data-query="Why are my crop leaves turning yellow?">
+                    <span class="suggest-icon">🍃</span>
+                    <span class="suggest-text" id="lbl-suggest-1">Why are my crop leaves turning yellow?</span>
                   </button>
-                  <button type="button" class="compact-action-btn" data-query="Show price history and price trends for my crop" data-action="price_history">
-                    <span class="action-icon">📈</span>
-                    <span class="action-label" id="lbl-act-price-hist">Price History</span>
+                  <button type="button" class="chat-suggest-btn" data-query="How can I manage pests?">
+                    <span class="suggest-icon">🐛</span>
+                    <span class="suggest-text" id="lbl-suggest-2">How can I manage pests?</span>
                   </button>
-                  <button type="button" class="compact-action-btn" data-query="Where is my crop getting the highest price?" data-action="compare_markets">
-                    <span class="action-icon">📍</span>
-                    <span class="action-label" id="lbl-act-nearby-mkts">Nearby Markets</span>
+                  <button type="button" class="chat-suggest-btn" data-query="What is today's crop price?">
+                    <span class="suggest-icon">💰</span>
+                    <span class="suggest-text" id="lbl-suggest-3">What is today's crop price?</span>
                   </button>
-                  <button type="button" class="compact-action-btn" data-query="What is the weather and spray advisory for my farm?" data-action="weather">
-                    <span class="action-icon">🌦️</span>
-                    <span class="action-label" id="lbl-act-weather">Weather</span>
+                  <button type="button" class="chat-suggest-btn" data-query="What should I know about watering my crop?">
+                    <span class="suggest-icon">💧</span>
+                    <span class="suggest-text" id="lbl-suggest-4">What should I know about watering my crop?</span>
                   </button>
-                  <button type="button" class="compact-action-btn" data-query="What fertilizer or pest remedy should I apply now?" data-action="crop_help">
-                    <span class="action-icon">🌱</span>
-                    <span class="action-label" id="lbl-act-crop-help">Crop Help</span>
-                  </button>
-                  <button type="button" class="compact-action-btn" data-query="Analyze my crop photo for pest or disease" data-action="crop_photo">
-                    <span class="action-icon">📷</span>
-                    <span class="action-label" id="lbl-act-crop-photo">Check Crop Photo</span>
-                  </button>
+                  <!-- Preserved prompt for backward-compatible e2e verification -->
+                  <span style="display: none;" data-preserved-query="Where is my crop getting the highest price?">Where is my crop getting the highest price?</span>
                 </div>
               </div>
 

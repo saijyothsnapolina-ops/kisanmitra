@@ -117,11 +117,6 @@ class AgriculturalTools:
         return market_service.find_nearby_mandis(lat, lon, crop=crop, max_km=max_km)
 
     @staticmethod
-    def market_forecast(crop: str, variety: Optional[str] = None, market: Optional[str] = None, horizon: int = 7) -> Dict[str, Any]:
-        import market_service
-        return market_service.getMarketPriceForecast(crop=crop, variety=variety, market=market, days_ahead=horizon)
-
-    @staticmethod
     def crop_knowledge(crop: str, topic: Optional[str] = None) -> Dict[str, Any]:
         crop_name = crop.capitalize() if crop else "Chilli"
         advisories = {
@@ -186,12 +181,7 @@ class ConversationalAIEngine:
         "onion": "Onion", "ఉల్లిపాయ": "Onion", "ఉల్లి": "Onion", "प्याज": "Onion",
         "turmeric": "Turmeric", "పసుపు": "Turmeric", "हल्दी": "Turmeric",
         "maize": "Maize", "మొక్కజొన్న": "Maize", "मक्का": "Maize",
-        "potato": "Potato", "బంగాళాదుంప": "Potato", "ఆలూ": "Potato", "आलू": "Potato",
-        "groundnut": "Groundnut", "peanut": "Groundnut", "వేరుశనగ": "Groundnut", "పల్లీ": "Groundnut", "मूंगफली": "Groundnut",
-        "wheat": "Wheat", "గోధుమ": "Wheat", "గోధుమలు": "Wheat", "गेहूं": "Wheat", "गेहू": "Wheat",
-        "gram": "Gram", "bengal gram": "Gram", "chana": "Gram", "శనగ": "Gram", "శనగలు": "Gram", "चना": "Gram",
-        "soybean": "Soybean", "soya": "Soybean", "సోయా": "Soybean", "సోయాబీన్": "Soybean", "सोयाबीन": "Soybean",
-        "sugarcane": "Sugarcane", "చెరకు": "Sugarcane", "गन्ना": "Sugarcane"
+        "potato": "Potato", "బంగాళాదుంప": "Potato", "ఆలూ": "Potato", "आलू": "Potato"
     }
 
     CROP_TE_MAP = {
@@ -203,12 +193,7 @@ class ConversationalAIEngine:
         "Onion": "ఉల్లిపాయ",
         "Turmeric": "పసుపు",
         "Maize": "మొక్కజొన్న",
-        "Potato": "బంగాళాదుంప",
-        "Groundnut": "వేరుశనగ",
-        "Wheat": "గోధుమ",
-        "Gram": "శనగలు",
-        "Soybean": "సోయాబీన్",
-        "Sugarcane": "చెరకు"
+        "Potato": "బంగాళాదుంప"
     }
 
     CROP_HI_MAP = {
@@ -220,12 +205,7 @@ class ConversationalAIEngine:
         "Onion": "प्याज",
         "Turmeric": "हल्दी",
         "Maize": "मक्का",
-        "Potato": "आलू",
-        "Groundnut": "मूंगफली",
-        "Wheat": "गेहूं",
-        "Gram": "चना",
-        "Soybean": "सोयाबीन",
-        "Sugarcane": "गन्ना"
+        "Potato": "आलू"
     }
 
     VARIETY_VOCAB = {
@@ -1120,41 +1100,6 @@ The programmer replied: *"Because they had eggs!"* 😂"""
             res["detected_language"] = effective_lang
             return res
 
-        # B2. Price Forecast & Market Volatility Intent
-        is_price_forecast_query = any(k in q_lower or k in user_msg_clean for k in [
-            "price forecast", "rate forecast", "forecast price", "predict price", "future price",
-            "price prediction", "price trend", "price going up", "price going down",
-            "will price increase", "will price decrease", "will price rise", "will price fall",
-            "next week price", "price next week", "price tomorrow", "tomorrow price", "next 7 days price",
-            "dhara peruguthunda", "dhara taggutunda", "dhara anchana",
-            "ధర పెరుగుతుందా", "రేటు పెరుగుతుందా", "ధర తగ్గుతుందా", "ధర అంచనా", "రేపటి ధర", "వచ్చే వారం ధర", "రాబోయే ధర",
-            "భవిష్యత్తు ధర", "ధర పెరుగుతుందా తగ్గుతుందా",
-            "भाव बढ़ेगा", "दाम बढ़ेगा", "भाव घटेगा", "मूल्य पूर्वानुमान", "भाव का पूर्वानुमान", "कल का भाव क्या रहेगा", "अगले हफ्ते का भाव"
-        ]) or (
-            any(w in q_lower for w in ["forecast", "predict", "prediction", "future"])
-            and any(p in q_lower for p in ["price", "rate", "mandi", "modal", "chilli", "tomato", "cotton", "paddy"])
-        ) or (
-            any(w in q_lower for w in ["will", "increase", "decrease"])
-            and any(c in q_lower for c in ["chilli", "tomato", "cotton", "paddy", "341", "teja"])
-            and any(p in q_lower for p in ["price", "rate"])
-        ) or (
-            any(w in user_msg_clean for w in ["పెరుగుతుందా", "తగ్గుతుందా", "అంచనా"])
-            and any(c in user_msg_clean for c in ["ధర", "రేటు", "మిర్చి", "టమోటా", "పత్తి", "వరి", "341", "తేజ"])
-        ) or (
-            any(w in user_msg_clean for w in ["बढ़ेगा", "घटेगा", "पूर्वानुमान"])
-            and any(c in user_msg_clean for c in ["भाव", "दाम", "मिर्च", "टमाटर", "कपास", "धान"])
-        )
-
-        if is_price_forecast_query:
-            session.active_topic = "market_forecast"
-            target_crop = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else session.active_crop) or "Chilli"
-            session.active_crop = target_crop
-            session.active_variety = variety
-            forecast_data = AgriculturalTools.market_forecast(crop=target_crop, variety=variety, horizon=7)
-            res = cls._format_market_forecast_response(target_crop, variety, forecast_data, effective_lang, profile)
-            res["detected_language"] = effective_lang
-            return res
-
         # C. Market Query Intent
         is_market_query = any(k in q_lower or k in user_msg_clean for k in [
             "price", "rate", "mandi", "market", "highest", "lowest", "spread", "benchmark", "arrivals",
@@ -1163,14 +1108,10 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         ])
 
         # D. Weather Query Intent
-        is_weather_query = (
-            any(k in q_lower or k in user_msg_clean for k in [
-                "weather", "rain", "rainy", "forecast", "humidity", "spray", "wind", "temperature",
-                "వాతావరణం", "వర్షం", "తుఫాను", "గాలి", "తేమ", "పిచికారీ", "స్ప్రే", "मौसम", "बारिश", "तापमान", "हवा", "छिड़काव", "स्प्रे"
-            ])
-            and not any(k in q_lower or k in user_msg_clean for k in ["curl", "leaf", "pest", "disease", "ముడత", "మరోడ్"])
-            and not is_price_forecast_query
-        )
+        is_weather_query = any(k in q_lower or k in user_msg_clean for k in [
+            "weather", "rain", "rainy", "forecast", "humidity", "spray", "wind", "temperature",
+            "వాతావరణం", "వర్షం", "తుఫాను", "గాలి", "తేమ", "పిచికారీ", "స్ప్రే", "मौसम", "बारिश", "तापमान", "हवा", "छिड़काव", "स्प्रे"
+        ]) and not any(k in q_lower or k in user_msg_clean for k in ["curl", "leaf", "pest", "disease", "ముడత", "మరోడ్"])
 
         # E. Crop Health & Pest Advisory Intent
         is_crop_health_query = any(k in q_lower or k in user_msg_clean for k in [
@@ -1234,30 +1175,34 @@ The programmer replied: *"Because they had eggs!"* 😂"""
             res["detected_language"] = effective_lang
             return res
 
-        # Crop Planning & Suitability Intent
-        from knowledge_base import (
-            detect_agri_intent_and_symptoms,
-            is_ambiguous_symptom_query,
-            get_clarification_response,
-            get_crop_planning_recommendation
-        )
-        agri_intent = detect_agri_intent_and_symptoms(user_msg_clean)
-        if agri_intent.get("is_crop_planning"):
-            is_ambig, ambig_type = is_ambiguous_symptom_query(user_msg_clean, None)
-            if is_ambig and ambig_type == "crop_planning":
-                return get_clarification_response(None, "crop_planning", effective_lang)
-            res = get_crop_planning_recommendation(user_msg_clean, effective_lang)
-            return res
-
         # Crop Health & Pest Advisory Tool
         if is_crop_health_query:
             target_crop = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else session.active_crop)
-            is_ambig, ambig_type = is_ambiguous_symptom_query(user_msg_clean, target_crop)
-            if is_ambig:
-                return get_clarification_response(target_crop, ambig_type, effective_lang)
-
             if not target_crop:
-                return get_clarification_response(None, "missing_crop", effective_lang)
+                if effective_lang == "te":
+                    return {
+                        "reply": "మీరు ఏ పంట గురించి అడుగుతున్నారు? (ఉదా: మిర్చి, టమోటా, పత్తి, వరి). పంట పేరు చెబితే సరైన సస్యరక్షణ సలహా ఇవ్వగలను.",
+                        "spoken_text": "మీరు ఏ పంట గురించి అడుగుతున్నారో తెలిపితే సరైన సస్యరక్షణ సలహా ఇవ్వగలను.",
+                        "tool_used": "clarification",
+                        "detected_language": "te",
+                        "suggested_actions": ["🌶️ మిర్చి సస్యరక్షణ", "🍅 టమోటా సస్యరక్షణ", "☁️ పత్తి సస్యరక్షణ"]
+                    }
+                elif effective_lang == "hi":
+                    return {
+                        "reply": "आप किस फसल के बारे में पूछ रहे हैं? (जैसे: मिर्च, टमाटर, कपास, धान)। कृपया फसल का नाम बताएं ताकि मैं सही उपचार बता सकूं।",
+                        "spoken_text": "कृपया फसल का नाम बताएं ताकि मैं सही उपचार बता सकूं।",
+                        "tool_used": "clarification",
+                        "detected_language": "hi",
+                        "suggested_actions": ["🌶️ मिर्च सुरक्षा", "🍅 टमाटर सुरक्षा", "☁️ कपास सुरक्षा"]
+                    }
+                else:
+                    return {
+                        "reply": "Which crop are you asking about? (e.g., Chilli, Tomato, Cotton, Paddy). Please specify your crop so I can provide the right crop protection advisory.",
+                        "spoken_text": "Which crop are you asking about?",
+                        "tool_used": "clarification",
+                        "detected_language": "en",
+                        "suggested_actions": ["🌶️ Chilli Protection", "🍅 Tomato Protection", "☁️ Cotton Protection"]
+                    }
 
             session.active_crop = target_crop
             session.active_topic = "crop_health"
@@ -1589,125 +1534,6 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         }
 
     @classmethod
-    def _format_market_forecast_response(
-        cls,
-        crop: str,
-        variety: Optional[str],
-        forecast_res: Dict[str, Any],
-        lang: str,
-        profile: Any = None
-    ) -> Dict[str, Any]:
-        """
-        Format academic statistical time-series forecasting report
-        with multi-step trajectories, 95% confidence intervals, and farmer advisory.
-        """
-        var_str = f" ({variety})" if variety else ""
-        crop_te = cls.CROP_TE_MAP.get(crop, crop)
-        crop_hi = cls.CROP_HI_MAP.get(crop, crop)
-
-        current_price = forecast_res.get("current_modal_price", 0)
-        expected_change = forecast_res.get("expected_change", 0)
-        expected_change_pct = forecast_res.get("expected_change_pct", 0.0)
-        overall_trend = forecast_res.get("overall_trend", "stable")
-        advisory_map = forecast_res.get("advisory", {})
-        series = forecast_res.get("forecast_series", [])
-        meta = forecast_res.get("model_metadata", {})
-        metrics = meta.get("evaluation_metrics", {})
-
-        mae = metrics.get("mae", 0)
-        mape = metrics.get("mape_pct", 0)
-        dir_acc = metrics.get("directional_accuracy_pct", 0)
-        val_method = metrics.get("validation_method", "Walk-Forward Rolling Cross-Validation")
-
-        # Build forecast trajectory table
-        table_rows = []
-        for step in series:
-            s_label = step.get("horizon_label", "")
-            s_date = step.get("date", "")
-            s_price = step.get("predicted_modal_price", 0)
-            s_low = step.get("lower_bound_95", 0)
-            s_high = step.get("upper_bound_95", 0)
-            pct_val = step.get("change_pct", 0)
-            sign_str = "+" if pct_val > 0 else ""
-            s_trend = f"📈 {sign_str}{pct_val}%" if pct_val > 0 else (f"📉 {pct_val}%" if pct_val < 0 else "⚖️ 0.0%")
-            table_rows.append(f"| {s_date} ({s_label}) | **₹{s_price:,}** | ₹{s_low:,} – ₹{s_high:,} | {s_trend} |")
-
-        table = "\n".join(table_rows)
-        sign = "+" if expected_change >= 0 else ""
-        chg_str = f"{sign}₹{expected_change:,} ({sign}{expected_change_pct}%)"
-
-        if lang == "te":
-            trend_te = "ధర పెరుగుదల (Bullish 📈)" if overall_trend == "bullish" else ("ధర తగ్గుదల (Bearish 📉)" if overall_trend == "bearish" else "స్థిరమైన ధర (Stable ⚖️)")
-            reply = f"""### 📈 **{crop_te}{var_str}** 7 రోజుల APMC మార్కెట్ ధరల అంచనా (AI Mandi Forecast)
-
-📍 **ప్రస్తుత మోడల్ ధర:** ₹{current_price:,} / క్వింటాల్ | **అంచనా ధోరణి:** **{trend_te}** ({chg_str})
-
-| తేదీ (వ్యవధి) | అంచనా మోడల్ ధర | 95% విశ్వసనీయ పరిధి | మార్పు |
-| :--- | :--- | :--- | :--- |
-{table}
-
-💡 **వ్యవసాయ సిఫార్సు:**
-{advisory_map.get('te', advisory_map.get('en', ''))}
-
-🔬 **మోడల్ నిర్ధారణ & మూల్యాంకనం (Academic AI Validation):**
-- **అల్గోరిథం:** Regularized Auto-Regressive Ridge Linear Regression ($L_2$ Regularization)
-- **క్రాస్-వ్యాలిడేషన్:** {val_method}
-- **Mean Absolute Error (MAE):** ₹{mae} / క్వింటాల్ | **MAPE:** {mape}% | **ట్రెండ్ ఖచ్చితత్వం:** {dir_acc}%"""
-
-            end_p = series[-1]["predicted_modal_price"] if series else current_price
-            spoken = f"AI మోడల్ విశ్లేషణ ప్రకారం, రాబోయే 7 రోజుల్లో {crop_te}{var_str} ధర క్వింటాల్‌కు ₹{end_p:,} వరకు ఉండే అవకాశం ఉంది. వ్యవసాయ సలహా ప్రకారం తగిన సమయంలో మార్కెట్‌కు తీసుకెళ్లండి."
-
-        elif lang == "hi":
-            trend_hi = "भाव में बढ़त (Bullish 📈)" if overall_trend == "bullish" else ("भाव में गिरावट (Bearish 📉)" if overall_trend == "bearish" else "भाव स्थिर (Stable ⚖️)")
-            reply = f"""### 📈 **{crop_hi}{var_str}** 7-दिवसीय APMC मंडी भाव पूर्वानुमान (AI Mandi Forecast)
-
-📍 **वर्तमान मोडल भाव:** ₹{current_price:,} / क्विंटल | **अनुमानित रुझान:** **{trend_hi}** ({chg_str})
-
-| तिथि (अवधि) | अनुमानित मोडल भाव | 95% विश्वास अंतराल | अनुमानित बदलाव |
-| :--- | :--- | :--- | :--- |
-{table}
-
-💡 **कृषि विपणन सलाह:**
-{advisory_map.get('hi', advisory_map.get('en', ''))}
-
-🔬 **मॉडल सत्यापन एवं मूल्यांकन (Academic AI Validation):**
-- **एल्गोरिदम:** Regularized Auto-Regressive Ridge Linear Regression ($L_2$)
-- **सत्यापन विधि:** {val_method}
-- **Mean Absolute Error (MAE):** ₹{mae} / क्विंटल | **MAPE:** {mape}% | **दिशात्मक सटीकता:** {dir_acc}%"""
-
-            end_p = series[-1]["predicted_modal_price"] if series else current_price
-            spoken = f"पूर्वानुमान मॉडल के अनुसार अगले 7 दिनों में {crop_hi}{var_str} का भाव ₹{end_p:,} प्रति क्विंटल तक पहुंचने का अनुमान है। उपयुक्त समय पर फसल मंडी भेजें।"
-
-        else:
-            trend_en = "Upward / Bullish 📈" if overall_trend == "bullish" else ("Downward / Bearish 📉" if overall_trend == "bearish" else "Consolidating / Stable ⚖️")
-            reply = f"""### 📈 **{crop}{var_str}** 7-Day APMC Mandi Price Forecast & Market Volatility Engine
-
-📍 **Current Modal Benchmark:** ₹{current_price:,} / Quintal | **Projected Trajectory:** **{trend_en}** ({chg_str})
-
-| Target Date | Predicted Modal Price | 95% Confidence Interval | Projected Trend |
-| :--- | :--- | :--- | :--- |
-{table}
-
-💡 **Actionable Dispatch Advisory:**
-{advisory_map.get('en', '')}
-
-🔬 **Academic AI Model Validation Metrics:**
-- **Model Architecture:** Regularized Auto-Regressive Ridge Regression ($L_2$ Regularization)
-- **Validation Protocol:** {val_method}
-- **Mean Absolute Error (MAE):** ₹{mae} / Quintal | **MAPE:** {mape}% | **Directional Accuracy:** {dir_acc}%"""
-
-            end_p = series[-1]["predicted_modal_price"] if series else current_price
-            spoken = f"According to our forecasting model, {crop}{var_str} modal price is projected to reach ₹{end_p:,} per quintal over the next 7 days."
-
-        return {
-            "reply": reply,
-            "spoken_text": spoken,
-            "tool_used": "market_price_forecast",
-            "forecast_data": forecast_res,
-            "suggested_actions": ["💰 Current Spot Rates", "📊 Compare Mandis", "🌦️ Today's Weather"]
-        }
-
-    @classmethod
     def _format_variety_comparison_response(cls, crop: str, query: str, lang: str) -> Dict[str, Any]:
         if lang == "te":
             reply = """### 🌶️ మిర్చి రకాల పోలిక: 341 vs. Teja
@@ -2004,9 +1830,47 @@ Here are verified APMC rates:
 
     @classmethod
     def _format_crop_health_response(cls, crop: str, query: str, lang: str, profile: Any = None) -> Dict[str, Any]:
-        """Provides grounded agronomic extension advisory for pests, diseases, nutrients, and management."""
-        from knowledge_base import get_structured_agri_advisory
-        return get_structured_agri_advisory(crop=crop, query=query, lang=lang, profile=profile)
+        """Provides remedies for pests, diseases, and leaf curl."""
+        advisory_data = AgriculturalTools.crop_knowledge(crop)
+        adv = advisory_data.get("advisory", {})
+        pest = adv.get("pest", "Thrips & Mites causing leaf curling")
+        sol = adv.get("solution", "Spray Neem oil (10,000 ppm) @ 2 ml/L or Fipronil 5% SC @ 2 ml/L.")
+
+        if lang == "te":
+            reply = f"""### 🛡️ **{crop}** పంట సంరక్షణ & నివారణ సూచనలు
+
+⚠️ **సమస్య:** {pest}
+💊 **సిఫార్సు చేయబడిన నివారణ:**
+{sol}
+
+💡 **సలహా:** ఖచ్చితమైన రోగ నిర్ధారణ కోసం ఆకు లేదా మొక్క ఫోటోను కెమెరా ద్వారా తీసి పంపవచ్చు!"""
+            spoken = f"{crop} పంటలో ఆకుముడత నివారణకు లీటరు నీటికి 2 మి.లీ వేపనూనె లేదా ఫిప్రోనిల్ పిచికారీ చేయండి."
+        elif lang == "hi":
+            reply = f"""### 🛡️ **{crop}** फसल प्रबंधन एवं रोकथाम परामर्श
+
+⚠️ **पहचान:** {pest}
+💊 **उपचार एवं रोकथाम:**
+{sol}
+
+💡 **टिप:** सटीक पहचान के लिए प्रभावित पत्ते की फोटो कैमरे से भेजें!"""
+            spoken = f"{crop} में पत्ती मरोड़ की रोकथाम हेतु 2 मिली नीम तेल प्रति लीटर पानी में मिलाकर छिड़काव करें।"
+        else:
+            reply = f"""### 🛡️ Plant Protection Guide for **{crop}**
+
+⚠️ **Identified Concern:** {pest}
+💊 **Recommended Management:**
+{sol}
+
+💡 **Pro Tip:** Tap the camera icon to upload a photo of affected foliage for automated AI visual diagnosis."""
+            spoken = f"For leaf curl in {crop}, apply Neem oil at 2 ml per liter or recommended foliar spray."
+
+        return {
+            "reply": reply,
+            "spoken_text": spoken,
+            "tool_used": "crop_doctor",
+            "context_applied": {"crop": crop},
+            "suggested_actions": ["📸 Upload Crop Photo", "🌿 Bio-control Methods", "🌦️ Check Spray Weather"]
+        }
 
     @classmethod
     def _handle_crop_image_analysis(cls, crop: str, lang: str, session: ConversationSession) -> Dict[str, Any]:
