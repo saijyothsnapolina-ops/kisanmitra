@@ -1482,7 +1482,19 @@ function renderHomeAdvisoryUpdate() {
 // -------------------------------------------------------------
 // Core Interaction & Profile Deferral Logic
 // -------------------------------------------------------------
+let isSendingChat = false;
+
+function resetSendState() {
+  isSendingChat = false;
+  if (dom.sendBtn) {
+    dom.sendBtn.disabled = false;
+    dom.sendBtn.style.opacity = '1';
+    dom.sendBtn.style.cursor = 'pointer';
+  }
+}
+
 function handleSendInput() {
+  if (isSendingChat) return;
   const text = dom.chatInput.value.trim();
   const image = state.selectedImageBase64;
 
@@ -1530,6 +1542,14 @@ function handleInteraction(interaction) {
 }
 
 function executeUserQuery(interaction) {
+  if (isSendingChat) return;
+  isSendingChat = true;
+  if (dom.sendBtn) {
+    dom.sendBtn.disabled = true;
+    dom.sendBtn.style.opacity = '0.5';
+    dom.sendBtn.style.cursor = 'not-allowed';
+  }
+
   // Transition smoothly from initial welcome box into conversation view
   if (dom.chatWelcomeBox) {
     dom.chatWelcomeBox.style.display = 'none';
@@ -1619,6 +1639,7 @@ function executeUserQuery(interaction) {
       );
       dom.chatStream.appendChild(botBubble);
       dom.chatStream.scrollTop = dom.chatStream.scrollHeight;
+      resetSendState();
 
       // Automatically speak the AI answer if the query originated via voice
       if (interaction.isVoice && (res.spoken_text || res.reply)) {
@@ -1662,11 +1683,13 @@ function executeUserQuery(interaction) {
         dom.chatStream.appendChild(botBubble);
         dom.chatStream.scrollTop = dom.chatStream.scrollHeight;
 
+        resetSendState();
         if (interaction.isVoice && (response.spoken_text || response.reply)) {
           VoiceController.speakText(response.spoken_text || response.reply, null, response.detected_language);
         }
       })
       .catch(finalErr => {
+        resetSendState();
         if (typingIndicator && typingIndicator.parentNode) typingIndicator.remove();
         if (streamBubble && streamBubble.parentNode) streamBubble.remove();
         console.error('Chat error:', finalErr);

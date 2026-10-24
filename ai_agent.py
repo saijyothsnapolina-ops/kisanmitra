@@ -21,6 +21,7 @@ import time
 import uuid
 from typing import Dict, List, Optional, Any, Tuple
 from pydantic import BaseModel, Field
+import llm_client
 
 # ==============================================================================
 # 1. Dialogue Models & Conversation Session Memory
@@ -914,7 +915,7 @@ The programmer replied: *"Because they had eggs!"* 😂"""
         # -------------------------------------------------------------
         if image_base64 or any(k in q_lower for k in ["analyze this crop photo", "crop photo", "फोटो", "ఫోటో"]):
             crop_target = crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else None) or session.active_crop or "Chilli"
-            res = cls._handle_crop_image_analysis(crop_target, effective_lang, session)
+            res = cls._handle_crop_image_analysis(crop_target, effective_lang, session, image_base64=image_base64, user_msg=user_msg_clean)
             res["detected_language"] = effective_lang
             return res
 
@@ -1262,8 +1263,47 @@ The programmer replied: *"Because they had eggs!"* 😂"""
             return res
 
         # -------------------------------------------------------------
-        # STEP 5: NATURAL CONVERSATIONAL FALLBACK (No generic crop dump)
+        # STEP 5: NATURAL CONVERSATIONAL FALLBACK & LLM REASONING
         # -------------------------------------------------------------
+        # Explicit query regarding LLM/API key configuration
+        if any(k in q_lower for k in ["connect llm", "api key", "configure llm", "setup gemini", "connect gemini", "ai key", "llm key", "llm setup", "api key setup"]):
+            guidance = llm_client.format_missing_key_guidance(effective_lang)
+            return {
+                "reply": guidance["reply"],
+                "spoken_text": guidance["spoken_text"],
+                "tool_used": "conversational_assistant",
+                "detected_language": effective_lang,
+                "suggested_actions": ["💰 Mandi Prices", "🌦️ Today's Weather", "🌱 Crop Advisories"]
+            }
+
+        # If an LLM is configured (GEMINI_API_KEY / OPENAI_API_KEY), generate intelligent answer
+        llm_cfg = llm_client.get_active_llm_config()
+        if llm_cfg["is_configured"]:
+            farm_ctx = {
+                "crop": crop or (profile.crops[0] if profile and getattr(profile, "crops", None) and len(profile.crops) > 0 else session.active_crop) if profile else session.active_crop,
+                "variety": variety or (getattr(profile, "crop_variety", "") if profile else ""),
+                "soil_type": getattr(profile, "soil_type", "") if profile else "",
+                "growth_stage": getattr(profile, "growth_stage", "") if profile else "",
+                "location": resolved_loc or session.farm_location or ""
+            }
+            llm_res = llm_client.generate_farming_response(user_msg_clean, lang=effective_lang, farm_context=farm_ctx)
+            if llm_res.get("success"):
+                return {
+                    "reply": llm_res["reply"],
+                    "spoken_text": llm_res["spoken_text"],
+                    "tool_used": llm_res.get("tool_used", "conversational_assistant"),
+                    "detected_language": effective_lang,
+                    "context_applied": {"crop": farm_ctx.get("crop") or "None", "llm_provider": llm_res.get("provider")},
+                    "suggested_actions": ["🌱 Farming Guidance", "💰 Market Prices", "🌦️ Weather Forecast"]
+                }
+            elif llm_res.get("error_type") in ["auth_error", "rate_limit", "timeout", "connection_error"]:
+                return {
+                    "reply": llm_res["reply"],
+                    "spoken_text": llm_res["spoken_text"],
+                    "tool_used": "conversational_assistant",
+                    "detected_language": effective_lang,
+                    "suggested_actions": ["💰 Market Prices", "🌦️ Weather", "🌱 Crop Help"]
+                }
         if effective_lang == "te":
             reply = f"మీ ప్రశ్న: *“{user_msg_clean}”*\n\nనేను మీ ప్రశ్నకు నేరుగా సహాయం చేయగలను. మీరు మార్కెట్ ధరలు, వాతావరణ అంచనాలు, వ్యవసాయ సలహాలు లేదా సాధారణ ప్రశ్నల గురించి మరింత వివరంగా అడగవచ్చు."
             spoken = "నేను మీ ప్రశ్నకు నేరుగా సహాయం చేయగలను. మరింత స్పష్టంగా అడగండి."
@@ -1831,6 +1871,26 @@ Here are verified APMC rates:
     @classmethod
     def _format_crop_health_response(cls, crop: str, query: str, lang: str, profile: Any = None) -> Dict[str, Any]:
         """Provides remedies for pests, diseases, and leaf curl."""
+        # Check if LLM is configured for rich contextual agronomic advice
+        llm_cfg = llm_client.get_active_llm_config()
+        if llm_cfg["is_configured"]:
+            farm_ctx = {
+                "crop": crop,
+                "variety": getattr(profile, "crop_variety", "") if profile else "",
+                "soil_type": getattr(profile, "soil_type", "") if profile else "",
+                "growth_stage": getattr(profile, "growth_stage", "") if profile else "",
+                "location": getattr(profile, "farm_location", "") or getattr(profile, "location", "") if profile else ""
+            }
+            llm_res = llm_client.generate_farming_response(query, lang=lang, farm_context=farm_ctx)
+            if llm_res.get("success"):
+                return {
+                    "reply": llm_res["reply"],
+                    "spoken_text": llm_res["spoken_text"],
+                    "tool_used": "crop_doctor",
+                    "context_applied": {"crop": crop, "provider": llm_res.get("provider")},
+                    "suggested_actions": ["📸 Upload Crop Photo", "🌿 Bio-control Methods", "🌦️ Check Spray Weather"]
+                }
+
         advisory_data = AgriculturalTools.crop_knowledge(crop)
         adv = advisory_data.get("advisory", {})
         pest = adv.get("pest", "Thrips & Mites causing leaf curling")
@@ -1873,10 +1933,30 @@ Here are verified APMC rates:
         }
 
     @classmethod
-    def _handle_crop_image_analysis(cls, crop: str, lang: str, session: ConversationSession) -> Dict[str, Any]:
+    def _handle_crop_image_analysis(cls, crop: str, lang: str, session: ConversationSession, image_base64: Optional[str] = None, user_msg: str = "") -> Dict[str, Any]:
         """Handles visual diagnosis when an image is attached."""
         session.active_crop = crop
         session.active_topic = "photo_diagnosis"
+
+        # If real image attached and LLM is configured with vision capabilities
+        if image_base64:
+            llm_cfg = llm_client.get_active_llm_config()
+            if llm_cfg["is_configured"]:
+                prompt_text = user_msg or f"Analyze this {crop} crop photo. Identify any visible leaf curl, pest symptoms, or nutritional deficiency, and recommend IPM treatment."
+                llm_res = llm_client.generate_farming_response(
+                    user_prompt=prompt_text,
+                    lang=lang,
+                    farm_context={"crop": crop},
+                    image_base64=image_base64
+                )
+                if llm_res.get("success"):
+                    return {
+                        "reply": llm_res["reply"],
+                        "spoken_text": llm_res["spoken_text"],
+                        "tool_used": "vision_diagnosis",
+                        "context_applied": {"crop": crop, "has_image": True, "provider": llm_res.get("provider")},
+                        "suggested_actions": ["🌦️ Check Spray Window", "💰 Check Market Prices", "🌱 Crop Advisories"]
+                    }
 
         # Crop-specific diagnosis dataset
         if crop == "Tomato":
